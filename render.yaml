@@ -28,10 +28,11 @@ services:
       # Dominios que pueden llamar al API. Sin esto el navegador bloquea a la
       # tienda y al panel por CORS.
       - key: CORS_ORIGINS
-        value: https://ecommerce-yeny-frontend.onrender.com,https://ecommerce-yeny-admin.onrender.com
+        value: https://ecommerce-yeny-1.onrender.com,https://ecommerce-yeny-frontend.onrender.com,https://ecommerce-yeny-admin.onrender.com
       # A donde apunta el enlace de "recuperar contraseña" que va en el correo.
+      # Es el dominio real de la tienda publicada, no el nombre del blueprint.
       - key: APP_URL
-        value: https://ecommerce-yeny-frontend.onrender.com
+        value: https://ecommerce-yeny-1.onrender.com
       # Envío del correo de recuperación (Gmail: contraseña de aplicación,
       # no la del correo). Sin estas variables el enlace queda en el log.
       - key: SMTP_HOST
@@ -75,6 +76,6 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://ecommerce-yeny-backend.onrender.com/api
-      # Enlaces "Ir a la Tienda" del panel. Cambiar si la tienda usa otro dominio.
+      # Enlaces "Ir a la Tienda" del panel: dominio real de la tienda publicada.
       - key: VITE_STORE_URL
-        value: https://ecommerce-yeny-frontend.onrender.com
+        value: https://ecommerce-yeny-1.onrender.com
