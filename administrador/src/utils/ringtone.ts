@@ -18,7 +18,7 @@ export const playRingtone = () => {
   // Crear dos frecuencias para un sonido más interesante
   const frequencies = [800, 1000] // Hz
 
-  frequencies.forEach((freq, index) => {
+  frequencies.forEach((freq) => {
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
 

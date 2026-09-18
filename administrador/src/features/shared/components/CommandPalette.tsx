@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Package, MessageSquare, Settings, BarChart3, Zap, Star, TrendingUp, Home, ShoppingCart, Users, Megaphone, Shield, FolderOpen } from 'lucide-react'
+import { Search, Package, MessageSquare, Settings, BarChart3, Zap, Star, TrendingUp, Home, ShoppingCart, Users, Megaphone, FolderOpen } from 'lucide-react'
 
 interface CommandPaletteProps {
   isOpen: boolean
@@ -74,7 +74,7 @@ export default function CommandPalette({ isOpen, onClose, onNavigate }: CommandP
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ duration: 0.15, ease: [0.25, 0.46, 0.45, 0.94] as any }}
+            transition={{ duration: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="fixed left-1/2 top-[20%] z-50 w-full max-w-lg -translate-x-1/2"
           >
             <div className="mx-4 overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
