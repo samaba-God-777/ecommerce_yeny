@@ -58,6 +58,11 @@ app.use('/api/chat', chatRoutes)
 app.use('/api/reports', reportRoutes)
 app.use('/api/payments', paymentRoutes)
 
+// Health check
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Yenyleths API running', timestamp: new Date().toISOString() })
+})
+
 // Sitemap
 app.get('/sitemap.xml', asyncHandler(async (req, res) => {
   const db = getDb()
