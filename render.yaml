@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: ecommerce-yeny-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: MOCK_PAYMENT_MODE
+        value: false
+
+  - type: static
+    name: ecommerce-yeny-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://ecommerce-yeny-backend.onrender.com/api
+
+  - type: static
+    name: ecommerce-yeny-admin
+    rootDir: administrador
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://ecommerce-yeny-backend.onrender.com/api
