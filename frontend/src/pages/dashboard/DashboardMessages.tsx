@@ -9,9 +9,9 @@ import {
 import VideoCall from '../../components/VideoCall'
 import IncomingCallNotification from '../../components/IncomingCallNotification'
 import { playRingtone, stopRingtone, playNotificationSound } from '../../utils/ringtone'
+import { API_BASE as API, API_ORIGIN } from '../../lib/urls'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')
+
 
 interface Message {
   id: string

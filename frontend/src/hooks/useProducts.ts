@@ -4,10 +4,7 @@ import { categories } from '../data/categories'
 import { fetchApiProducts } from '../lib/api'
 import { resolveProductImage } from '../data/productImages'
 import type { Product } from '../types'
-
-// Origen del backend para las imagenes subidas: sale del entorno igual que el
-// API (lib/api.ts), quitando el /api final. Localhost queda para desarrollo.
-const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')
+import { API_ORIGIN } from '../lib/urls'
 
 function slugify(text: string) {
   return text

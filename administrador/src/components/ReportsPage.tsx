@@ -22,8 +22,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+import { API_BASE as API } from '../lib/urls'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },

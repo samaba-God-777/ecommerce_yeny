@@ -22,7 +22,7 @@ import PaymentsConfig from './components/PaymentsConfig'
 import ReportsPage from './components/ReportsPage'
 import Dashboard from './features/dashboard/components/DashboardHome'
 import api from './lib/api'
-import { STORE_URL } from './lib/urls'
+import { STORE_URL, API_ORIGIN } from './lib/urls'
 
 interface Category { id: string; name: string; slug: string; image: string | null }
 interface Product {
@@ -32,7 +32,6 @@ interface Product {
   isBestSeller?: boolean; isTrending?: boolean
 }
 
-const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')
 const SOCKET_URL = API_ORIGIN
 
 export default function App() {
