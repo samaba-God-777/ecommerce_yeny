@@ -1,0 +1,199 @@
+@import 'tailwindcss';
+
+@theme {
+  /* ===== Industrial Streetwear: the sales-floor stockroom. =====
+     White cotton + black nylon ground, black-on-white hazard
+     diagonals for structure, ONE safety-orange zip-tie tag accent.
+     Every zone named in straight-quoted industrial capitals; prices
+     read as paper price tickets. Refuses the cream-shelf boutique
+     and the dark-neon shop, both. */
+  --color-paper: #f2f0ea;
+  --color-paper-elevated: #fbfaf6;
+  --color-ink: #14120f;
+  --color-ink-soft: #5a554c;
+  --color-line: #d9d4c6;
+  --color-line-strong: #a8a294;
+  --color-market: #f04e1a;
+  --color-market-deep: #c63d10;
+  --color-market-bright: #ff6a33;
+  --color-chalk: #ffffff;
+
+  /* Legacy brand aliases remapped to the stockroom world.
+     Kept under the old names so the whole storefront inherits them. */
+  --color-gold: #f04e1a;
+  --color-gold-light: #ff6a33;
+  --color-gold-dark: #c63d10;
+  --color-brown: #14120f;
+  --color-beige: #e9e5da;
+  --color-cream: #fbfaf6;
+
+  --color-pink-50: #fbeae2;
+  --color-pink-100: #f9d6c4;
+  --color-pink-200: #f3a67c;
+  --color-pink-300: #f0762f;
+  --color-pink-400: #f04e1a;
+  --color-pink-500: #f04e1a;
+  --color-pink-600: #c63d10;
+  --color-pink-700: #9c2f0b;
+  --color-pink-800: #73220a;
+  --color-pink-900: #4d1607;
+
+  --font-sans: 'Archivo', system-ui, sans-serif;
+  --font-display: 'Barlow Condensed', 'Archivo', sans-serif;
+  --font-serif: 'Archivo', Georgia, serif;
+  --font-mono: 'Archivo Mono', ui-monospace, monospace;
+
+  /* shadcn/ui tokens mapped to the stockroom world */
+  --color-background: #f6f4ef;
+  --color-foreground: #14120f;
+  --color-muted: #ece8dd;
+  --color-muted-foreground: #6b655a;
+  --color-primary: #14120f;
+  --color-primary-foreground: #f6f4ef;
+  --color-secondary: #f04e1a;
+  --color-secondary-foreground: #f6f4ef;
+  --color-accent: #f04e1a;
+  --color-accent-foreground: #f6f4ef;
+  --color-destructive: #b3261e;
+  --color-destructive-foreground: #f6f4ef;
+  --color-border: #d9d4c6;
+  --color-input: #cfc9ba;
+  --color-ring: #f04e1a;
+  --radius: 0.25rem;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+  /* Price tickets: money reads as the paper tag on the rack. */
+  .money {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    scroll-width: none;
+  }
+  /* Straight-quoted industrial label. Every zone gets its literal name. */
+  .q::before {
+    content: '“';
+    font-weight: 700;
+  }
+  .q::after {
+    content: '”';
+    font-weight: 700;
+  }
+  /* The 45-degree hazard band that strikes through whatever is off the rack. */
+  .hazard {
+    background-image: repeating-linear-gradient(
+      45deg,
+      var(--color-ink) 0,
+      var(--color-ink) 10px,
+      transparent 10px,
+      transparent 20px
+    );
+  }
+  .hazard-reverse {
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--color-ink) 0,
+      var(--color-ink) 10px,
+      transparent 10px,
+      transparent 20px
+    );
+  }
+  /* A hard stenciled label plate, square on the grid. */
+  .plate {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 2px solid var(--color-ink);
+    background: var(--color-paper-elevated);
+    color: var(--color-ink);
+    padding: 0.35rem 0.75rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  /* A swing tag: the zip tie and the price ticket still on the piece. */
+  .swing {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-paper-elevated);
+    background: var(--color-ink);
+    border: 1px solid var(--color-ink);
+    padding: 0.18rem 0.45rem;
+    position: relative;
+  }
+  .swing::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    background: var(--color-paper-elevated);
+    border-radius: 9999px;
+    border: 1px solid var(--color-ink);
+  }
+  .swing-tag {
+    background: var(--color-market);
+    border-color: var(--color-market);
+  }
+  .swing-tag::after {
+    background: var(--color-market);
+    border-color: var(--color-market);
+  }
+  /* Hard offset shadow belongs to a world that chose blocks; here the
+     stockroom shelf edge is a 2px ink rule, not a blur. */
+  .sheen {
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+  }
+}
+
+@keyframes swing-away {
+  0% { transform: rotate(0deg); }
+  40% { transform: rotate(14deg); }
+  70% { transform: rotate(-8deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@layer utilities {
+  .hover-swing {
+    transform-origin: top center;
+    animation: swing-away 0.6s ease-in-out;
+  }
+}

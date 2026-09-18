@@ -1,0 +1,499 @@
+{
+  "categories": [
+    {
+      "id": "1",
+      "name": "Mujer",
+      "slug": "women",
+      "image": "women-formalwear-set.webp"
+    },
+    {
+      "id": "2",
+      "name": "Hombre",
+      "slug": "men",
+      "image": "men-jersey-germany.webp"
+    },
+    {
+      "id": "3",
+      "name": "Niños",
+      "slug": "kids",
+      "image": "kids-crocs-pokemon.webp"
+    },
+    {
+      "id": "4",
+      "name": "Zapatos",
+      "slug": "shoes",
+      "image": "shoes-boots-collection.webp"
+    },
+    {
+      "id": "5",
+      "name": "Sneakers",
+      "slug": "sneakers",
+      "image": "sneakers-crocs-black.webp"
+    },
+    {
+      "id": "6",
+      "name": "Chaquetas de Cuero",
+      "slug": "leather-jackets",
+      "image": null
+    },
+    {
+      "id": "7",
+      "name": "Bolsos",
+      "slug": "bags",
+      "image": null
+    },
+    {
+      "id": "8",
+      "name": "Perfumes",
+      "slug": "perfumes",
+      "image": null
+    },
+    {
+      "id": "9",
+      "name": "Joyería",
+      "slug": "jewelry",
+      "image": null
+    },
+    {
+      "id": "10",
+      "name": "Relojes",
+      "slug": "watches",
+      "image": null
+    },
+    {
+      "id": "11",
+      "name": "Lentes de Sol",
+      "slug": "sunglasses",
+      "image": null
+    },
+    {
+      "id": "12",
+      "name": "Belleza",
+      "slug": "beauty",
+      "image": null
+    },
+    {
+      "id": "13",
+      "name": "Sombrero Panameno",
+      "slug": "Sombreo",
+      "image": null
+    }
+  ],
+  "products": [
+    {
+      "id": "1",
+      "name": "Conjunto Deportivo Azul Marino",
+      "categoryId": "1",
+      "brand": "Yenyleths",
+      "price": 89,
+      "oldPrice": null,
+      "image": "women-activewear-navy-set.webp",
+      "description": "Pieza premium con atención artesanal",
+      "stock": 15,
+      "rating": 4.5,
+      "isFlashSale": false,
+      "flashSalePrice": null,
+      "flashSaleEnd": null,
+      "isBestSeller": true,
+      "isTrending": false
+    },
+    {
+      "id": "2",
+      "name": "Jersey Alemania Retro",
+      "categoryId": "2",
+      "brand": "Nórdiq",
+      "price": 120,
+      "oldPrice": 160,
+      "image": "men-jerseys-collection-1.webp",
+      "description": "Jersey oficial retro de fútbol",
+      "stock": 22,
+      "rating": 4.8,
+      "isFlashSale": true,
+      "flashSalePrice": 89,
+      "flashSaleEnd": "2026-07-15T23:59:59",
+      "isBestSeller": true,
+      "isTrending": true
+    },
+    {
+      "id": "3",
+      "name": "Crocs Edición Pokémon",
+      "categoryId": "3",
+      "brand": "Crocs",
+      "price": 55,
+      "oldPrice": null,
+      "image": "kids-crocs-pokemon.webp",
+      "description": "Crocs de colección Pokémon",
+      "stock": 30,
+      "rating": 4.9,
+      "isFlashSale": false,
+      "flashSalePrice": null,
+      "flashSaleEnd": null,
+      "isBestSeller": true,
+      "isTrending": false
+    },
+    {
+      "id": "4",
+      "name": "Botas",
+      "categoryId": "4",
+      "brand": "Bota",
+      "price": 150,
+      "oldPrice": null,
+      "image": "/uploads/products/1782787352742-431779149.jpeg",
+      "description": "Producto premium Yenyleths",
+      "stock": 3,
+      "rating": 4.5,
+      "isFlashSale": false,
+      "flashSalePrice": null,
+      "flashSaleEnd": null,
+      "isBestSeller": false,
+      "isTrending": true
+    },
+    {
+      "id": "5",
+      "name": "Sombrero",
+      "categoryId": "2",
+      "brand": "Pintado",
+      "price": 400,
+      "oldPrice": null,
+      "image": "/uploads/products/1782789815905-22197318.jpeg",
+      "description": "Producto premium Yenyleths",
+      "stock": 2,
+      "rating": 4.5,
+      "isFlashSale": true,
+      "flashSalePrice": 299,
+      "flashSaleEnd": "2026-07-10T23:59:59",
+      "isBestSeller": false,
+      "isTrending": true
+    },
+    {
+      "id": "6",
+      "name": "Camisa",
+      "categoryId": "2",
+      "brand": "Oscar de la Renta",
+      "price": 55,
+      "oldPrice": null,
+      "image": "/uploads/products/1782841087419-558231464.webp",
+      "description": "Producto premium Yenyleths",
+      "stock": 5,
+      "rating": 4.5,
+      "isFlashSale": false,
+      "flashSalePrice": null,
+      "flashSaleEnd": null,
+      "isBestSeller": false,
+      "isTrending": false
+    },
+    {
+      "id": "7",
+      "name": "Perfume",
+      "categoryId": "8",
+      "brand": "Chanel",
+      "price": 60,
+      "oldPrice": null,
+      "image": "/uploads/products/1782841471476-723811320.webp",
+      "description": "Producto premium Yenyleths",
+      "stock": 3,
+      "rating": 4.5,
+      "isFlashSale": false,
+      "flashSalePrice": null,
+      "flashSaleEnd": null,
+      "isBestSeller": false,
+      "isTrending": false
+    }
+  ],
+  "conversations": [
+    {
+      "id": "conv-1",
+      "customerName": "Maria Garcia",
+      "customerEmail": "maria@example.com",
+      "customerId": "user-1",
+      "lastMessage": "Hola, quería saber el estado de mi pedido",
+      "lastMessageTime": "2026-06-30T10:06:00",
+      "unread": 0,
+      "status": "online",
+      "avatar": "MG"
+    },
+    {
+      "id": "conv-2",
+      "customerName": "Carlos Mendoza",
+      "customerEmail": "carlos@example.com",
+      "customerId": "user-2",
+      "lastMessage": "Procesaremos tu reembolso en 24-48 horas",
+      "lastMessageTime": "2026-06-30T09:00:00",
+      "unread": 0,
+      "status": "offline",
+      "avatar": "CM"
+    },
+    {
+      "id": "conv-3",
+      "customerName": "Willy",
+      "customerEmail": "ana@example.com",
+      "customerId": "user-3",
+      "lastMessage": "que lo que manito",
+      "lastMessageTime": "2026-07-01T01:47:25.191Z",
+      "unread": 0,
+      "status": "offline",
+      "avatar": "AR"
+    },
+    {
+      "id": "conv-4",
+      "customerName": "Sofia Torres",
+      "customerEmail": "sofia@example.com",
+      "customerId": "user-4",
+      "lastMessage": "Hemos agregado los puntos a tu cuenta",
+      "lastMessageTime": "2026-06-29T10:00:00",
+      "unread": 0,
+      "status": "offline",
+      "avatar": "ST"
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg-1",
+      "conversationId": "conv-1",
+      "sender": "customer",
+      "senderName": "Maria Garcia",
+      "text": "Hola, quería saber el estado de mi pedido #YB-2847",
+      "timestamp": "2026-06-30T10:02:00"
+    },
+    {
+      "id": "msg-2",
+      "conversationId": "conv-1",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "Déjame revisar eso por ti. Un momento por favor...",
+      "timestamp": "2026-06-30T10:03:00"
+    },
+    {
+      "id": "msg-3",
+      "conversationId": "conv-1",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "¡Buenas noticias! Tu pedido #YB-2847 ha sido enviado. El número de rastreo es TRK-938271. Debería llegar en 3-5 días hábiles.",
+      "timestamp": "2026-06-30T10:05:00"
+    },
+    {
+      "id": "msg-4",
+      "conversationId": "conv-1",
+      "sender": "customer",
+      "senderName": "Maria Garcia",
+      "text": "¡Muchas gracias! 😊",
+      "timestamp": "2026-06-30T10:06:00"
+    },
+    {
+      "id": "msg-1782828109660",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Willy",
+      "text": "heola",
+      "timestamp": "2026-06-30T14:01:49.660Z"
+    },
+    {
+      "id": "msg-1782828112473",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "¡Hola! Gracias por contactarnos. ¿En qué puedo ayudarte?",
+      "timestamp": "2026-06-30T14:01:52.473Z"
+    },
+    {
+      "id": "msg-1782828221478",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "como estas",
+      "timestamp": "2026-06-30T14:03:41.478Z"
+    },
+    {
+      "id": "msg-1782828249213",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Willy",
+      "text": "muy bien",
+      "timestamp": "2026-06-30T14:04:09.213Z"
+    },
+    {
+      "id": "msg-1782828252093",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "Gracias por tu mensaje. Un momento por favor...",
+      "timestamp": "2026-06-30T14:04:12.093Z"
+    },
+    {
+      "id": "msg-1782828311206",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Willy",
+      "text": "okay",
+      "timestamp": "2026-06-30T14:05:11.206Z"
+    },
+    {
+      "id": "msg-1782828314321",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "Déjame consultar esa información para ti.",
+      "timestamp": "2026-06-30T14:05:14.321Z"
+    },
+    {
+      "id": "msg-1782828493689",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Cliente",
+      "text": "hola",
+      "timestamp": "2026-06-30T14:08:13.689Z"
+    },
+    {
+      "id": "msg-1782828495478",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "¡Hola! Gracias por contactarnos. ¿En qué puedo ayudarte?",
+      "timestamp": "2026-06-30T14:08:15.478Z"
+    },
+    {
+      "id": "msg-1782828525139",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "admin",
+      "text": "como estas my friend. en que puedo ayudarlo",
+      "timestamp": "2026-06-30T14:08:45.139Z"
+    },
+    {
+      "id": "msg-1782829155516",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Cliente",
+      "text": "muy bien",
+      "timestamp": "2026-06-30T14:19:15.516Z"
+    },
+    {
+      "id": "msg-1782829157429",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "Gracias por tu mensaje. Un momento por favor...",
+      "timestamp": "2026-06-30T14:19:17.429Z"
+    },
+    {
+      "id": "msg-1782830634060",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "admin",
+      "text": "pronto lo esperamos aqui",
+      "timestamp": "2026-06-30T14:43:54.060Z"
+    },
+    {
+      "id": "msg-1782856273751",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Willy",
+      "text": "que lo que manito",
+      "timestamp": "2026-06-30T21:51:13.751Z"
+    },
+    {
+      "id": "msg-1782856275290",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "¡Recibido! Te responderé en breve.",
+      "timestamp": "2026-06-30T21:51:15.290Z"
+    },
+    {
+      "id": "msg-1782857758749",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Willy",
+      "text": "hello",
+      "timestamp": "2026-06-30T22:15:58.749Z"
+    },
+    {
+      "id": "msg-1782857762011",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "Entendido, estoy revisando tu solicitud.",
+      "timestamp": "2026-06-30T22:16:02.011Z"
+    },
+    {
+      "id": "msg-1782857769636",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "admin",
+      "text": "hola",
+      "timestamp": "2026-06-30T22:16:09.636Z"
+    },
+    {
+      "id": "msg-1782857776218",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Willy",
+      "text": "como estas",
+      "timestamp": "2026-06-30T22:16:16.218Z"
+    },
+    {
+      "id": "msg-1782857778298",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "Admin",
+      "text": "Déjame consultar esa información para ti.",
+      "timestamp": "2026-06-30T22:16:18.298Z"
+    },
+    {
+      "id": "msg-1782857878843",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "admin",
+      "text": "hello",
+      "timestamp": "2026-06-30T22:17:58.843Z"
+    },
+    {
+      "id": "msg-1782857895246",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Willy",
+      "text": "estoy bien",
+      "timestamp": "2026-06-30T22:18:15.247Z"
+    },
+    {
+      "id": "msg-1782857927825",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "admin",
+      "text": "me gustaria comprar la camisa que modelo ademas tienes",
+      "timestamp": "2026-06-30T22:18:47.825Z"
+    },
+    {
+      "id": "msg-1782859223759",
+      "conversationId": "conv-3",
+      "sender": "admin",
+      "senderName": "admin",
+      "text": "que lo que",
+      "timestamp": "2026-06-30T22:40:23.759Z"
+    },
+    {
+      "id": "msg-1782859230681",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Willy",
+      "text": "todo bien manito",
+      "timestamp": "2026-06-30T22:40:30.681Z"
+    },
+    {
+      "id": "msg-1782859242534",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Willy",
+      "text": "trabajando duro para que esto este a toda maquina",
+      "timestamp": "2026-06-30T22:40:42.534Z"
+    },
+    {
+      "id": "msg-1782870445191",
+      "conversationId": "conv-3",
+      "sender": "customer",
+      "senderName": "Willy",
+      "text": "que lo que manito",
+      "timestamp": "2026-07-01T01:47:25.191Z"
+    }
+  ]
+}

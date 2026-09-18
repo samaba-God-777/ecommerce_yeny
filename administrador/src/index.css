@@ -1,0 +1,186 @@
+@import 'tailwindcss';
+
+@theme {
+  /* ===== La Cuenta: trusted Panamanian corner-register. =====
+     Paper + ink + ONE market-red accent. Ruled hairlines, mono ledger
+     money, stamp seals. Operate register of the same storefront world. */
+  --color-paper: #f4f1ea;
+  --color-paper-elevated: #fbf9f3;
+  --color-ink: #1e1c18;
+  --color-ink-soft: #4a463e;
+  --color-line: #d8d2c4;
+  --color-line-strong: #b8b0a0;
+  --color-market: #b23a2f;
+  --color-market-deep: #8c2b22;
+  --color-market-bright: #d2513f;
+  --color-chalk: #f6f2ea;
+
+  /* Legacy brand aliases remapped to the new paper/ink/market world. */
+  --color-gold: #b23a2f;
+  --color-gold-light: #d2513f;
+  --color-gold-dark: #8c2b22;
+  --color-brown: #1e1c18;
+  --color-brown-light: #3d332b;
+  --color-beige: #ece7dc;
+  --color-cream: #fbf9f3;
+
+  /* Pink scale remapped to market red, so legacy pink-* usages inherit it. */
+  --color-pink-50: #faf4ef;
+  --color-pink-100: #f3e5de;
+  --color-pink-200: #e4c8bd;
+  --color-pink-300: #d19f8e;
+  --color-pink-400: #c47362;
+  --color-pink-500: #b23a2f;
+  --color-pink-600: #8c2b22;
+  --color-pink-700: #6f221a;
+  --color-pink-800: #541711;
+  --color-pink-900: #3b0f0a;
+
+  --font-sans: 'Archivo', system-ui, sans-serif;
+  --font-serif: 'Archivo', Georgia, serif;
+  --font-mono: 'Archivo Mono', ui-monospace, monospace;
+
+  /* Light theme shadcn tokens mapped to the ledger register */
+  --color-background: #f4f1ea;
+  --color-foreground: #1e1c18;
+  --color-card: #fbf9f3;
+  --color-card-foreground: #1e1c18;
+  --color-popover: #fbf9f3;
+  --color-popover-foreground: #1e1c18;
+  --color-muted: #ece7dc;
+  --color-muted-foreground: #6b665c;
+  --color-primary: #1e1c18;
+  --color-primary-foreground: #fbf9f3;
+  --color-secondary: #b23a2f;
+  --color-secondary-foreground: #fbf9f3;
+  --color-accent: #b23a2f;
+  --color-accent-foreground: #fbf9f3;
+  --color-destructive: #9b1c1c;
+  --color-destructive-foreground: #fbf9f3;
+  --color-border: #d8d2c4;
+  --color-input: #d0c9ba;
+  --color-ring: #b23a2f;
+  --color-sidebar: #f4f1ea;
+  --color-sidebar-foreground: #1e1c18;
+  --color-sidebar-border: #d8d2c4;
+  --color-sidebar-accent: #ece7dc;
+  --color-sidebar-accent-foreground: #1e1c18;
+  --radius: 0.5rem;
+}
+
+/* Dark theme: the register behind closed shutters — same world, night ink. */
+.dark {
+  --color-background: #12100d;
+  --color-foreground: #eee9e0;
+  --color-card: #1a1712;
+  --color-card-foreground: #eee9e0;
+  --color-popover: #1a1712;
+  --color-popover-foreground: #eee9e0;
+  --color-muted: #241f18;
+  --color-muted-foreground: #a09785;
+  --color-primary: #eee9e0;
+  --color-primary-foreground: #12100d;
+  --color-secondary: #c14a3e;
+  --color-secondary-foreground: #12100d;
+  --color-accent: #c14a3e;
+  --color-accent-foreground: #12100d;
+  --color-destructive: #ef6a5e;
+  --color-destructive-foreground: #12100d;
+  --color-border: #2a241c;
+  --color-input: #2a241c;
+  --color-ring: #c14a3e;
+  --color-sidebar: #16130f;
+  --color-sidebar-foreground: #eee9e0;
+  --color-sidebar-border: #2a241c;
+  --color-sidebar-accent: #241f18;
+  --color-sidebar-accent-foreground: #eee9e0;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-foreground);
+    background: var(--color-background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-sans);
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    color: var(--color-foreground);
+  }
+  /* Ledger money: prices and counts read as tallies. */
+  .money {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .glass {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .glass-card {
+    background: rgba(251, 249, 243, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(216, 210, 196, 0.6);
+  }
+  .dark .glass-card {
+    background: rgba(26, 23, 18, 0.7);
+    border: 1px solid rgba(42, 36, 28, 0.6);
+  }
+  /* A pressed rubber stamp for badges / seals of state. */
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1.5px solid currentColor;
+    border-radius: 0.3125rem;
+    padding: 0.18rem 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Scrollbar: ruled ledger lines */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c9c0ad;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #3a332a;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b3a891;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4a4238;
+}
