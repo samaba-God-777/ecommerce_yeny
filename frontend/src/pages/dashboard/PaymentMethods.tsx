@@ -7,7 +7,6 @@ import {
   Star,
   X,
   Lock,
-  Check,
   ShieldCheck,
   Edit3,
   Eye,

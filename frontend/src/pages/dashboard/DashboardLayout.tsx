@@ -219,7 +219,7 @@ export default function DashboardLayout() {
             </button>
 
             <button
-              onClick={() => window.location.href = 'http://localhost:5175'}
+              onClick={() => window.location.href = '/'}
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pink-100 text-pink-600 hover:bg-pink-200 transition font-medium text-sm"
               aria-label="Ir a Tienda"
             >
@@ -285,7 +285,7 @@ export default function DashboardLayout() {
                       onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        window.location.href = 'http://localhost:5175'
+                        window.location.href = '/'
                         setProfileOpen(false)
                       }}
                       className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-pink-50 active:bg-pink-100 transition-colors font-medium"

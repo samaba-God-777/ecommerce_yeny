@@ -23,13 +23,14 @@ export default function VideoCall({
   const [audioEnabled, setAudioEnabled] = useState(true)
   const [videoEnabled, setVideoEnabled] = useState(true)
   const [callDuration, setCallDuration] = useState(0)
-  const [isAnswering, setIsAnswering] = useState(!!remoteOffer)
+  // Solo se lee: quien recibe la oferta contesta, no llama.
+  const [isAnswering] = useState(!!remoteOffer)
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   const localStreamRef = useRef<MediaStream | null>(null)
-  const callTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const callTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Inicializar WebRTC
   useEffect(() => {

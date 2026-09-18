@@ -3,6 +3,7 @@ import Badge from './ui/Badge'
 import Button from './ui/Button'
 import Modal from './ui/Modal'
 import { useState } from 'react'
+import { STORE_URL } from '../lib/urls'
 
 interface Category {
   id: string
@@ -75,7 +76,7 @@ export default function CategoryTable({ categories, onDelete }: CategoryTablePro
                     </td>
                     <td className="px-6 py-4 text-center">
                       <a
-                        href={`http://localhost:5175/category/${cat.slug}`}
+                        href={`${STORE_URL}/category/${cat.slug}`}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-market/10 text-market rounded-lg hover:bg-market/20 transition-colors text-sm font-medium"
                       >
                         <ExternalLink size={14} />

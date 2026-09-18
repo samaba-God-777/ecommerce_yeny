@@ -7,6 +7,7 @@ import { useAllProducts } from '../../context/ProductsContext'
 import { useAuth } from '../../context/AuthContext'
 import { categories } from '../../data/categories'
 import { logo } from '../../data/productImages'
+import { ADMIN_URL } from '../../lib/urls'
 
 const navLinks = [
   { label: 'Mujer', slug: 'women' },
@@ -371,7 +372,7 @@ export function Navbar() {
               ))}
               <li className="border-t border-line pt-4">
                 <a
-                  href="http://localhost:5173"
+                  href={ADMIN_URL}
                   className="flex items-center gap-2 font-mono text-lg font-bold text-market transition hover:text-market-deep"
                 >
                   <Settings size={20} />

@@ -10,7 +10,8 @@ import VideoCall from '../../components/VideoCall'
 import IncomingCallNotification from '../../components/IncomingCallNotification'
 import { playRingtone, stopRingtone, playNotificationSound } from '../../utils/ringtone'
 
-const API = 'http://localhost:5000/api'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')
 
 interface Message {
   id: string
@@ -84,7 +85,7 @@ export default function DashboardMessages() {
 
   // Socket.io setup
   useEffect(() => {
-    const socket = io('http://localhost:5000', {
+    const socket = io(API_ORIGIN, {
       reconnection: true,
       reconnectionDelay: 500,
       reconnectionDelayMax: 3000,

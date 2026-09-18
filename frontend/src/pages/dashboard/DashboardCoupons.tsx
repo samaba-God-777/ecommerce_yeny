@@ -128,11 +128,6 @@ const tabs: { id: CouponStatus; label: string }[] = [
   { id: 'expired', label: 'Expirados' },
 ]
 
-function formatDate(dateStr: string) {
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
 function daysUntil(dateStr: string) {
   const diff = new Date(dateStr).getTime() - Date.now()
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))

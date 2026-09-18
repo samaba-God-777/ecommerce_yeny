@@ -25,6 +25,9 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://ecommerce-yeny-backend.onrender.com/api
+      # Enlace "Panel Admin" de la tienda. Cambiar si el admin usa otro dominio.
+      - key: VITE_ADMIN_URL
+        value: https://ecommerce-yeny-admin.onrender.com
 
   - type: static
     name: ecommerce-yeny-admin
@@ -34,3 +37,6 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://ecommerce-yeny-backend.onrender.com/api
+      # Enlaces "Ir a la Tienda" del panel. Cambiar si la tienda usa otro dominio.
+      - key: VITE_STORE_URL
+        value: https://ecommerce-yeny-frontend.onrender.com

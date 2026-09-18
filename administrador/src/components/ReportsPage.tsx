@@ -13,8 +13,6 @@ import {
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -25,7 +23,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 
-const API = 'http://localhost:5000/api'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -234,7 +232,7 @@ export default function ReportsPage() {
                     border: '1px solid var(--color-border)',
                     borderRadius: '12px',
                   }}
-                  formatter={(value: number) => [formatCurrency(value), '']}
+                  formatter={(value) => [formatCurrency(Number(value ?? 0)), '']}
                 />
                 <Bar dataKey="ventas" fill="#ec4899" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -255,7 +253,7 @@ export default function ReportsPage() {
                   <Pie data={data.topCategories} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                     {data.topCategories.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
-                  <Tooltip formatter={(value: number) => [`${value}%`, '']} />
+                  <Tooltip formatter={(value) => [`${Number(value ?? 0)}%`, '']} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-3 flex-1">

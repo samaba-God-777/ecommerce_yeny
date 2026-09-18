@@ -4,14 +4,15 @@ import { io, Socket } from 'socket.io-client'
 import {
   MessageCircle, Search, Send, Paperclip, Smile, Phone,
   Video, MoreVertical, Users, Circle, CheckCheck, Trash2, User,
-  Mail, Archive, Pin, Volume2, VolumeX, Lock, Eye, EyeOff
+  Mail, Archive, Pin, Volume2, VolumeX, Lock, EyeOff
 } from 'lucide-react'
 import VideoCall from './VideoCall'
 import IncomingCallNotification from './IncomingCallNotification'
 import { playRingtone, stopRingtone, playNotificationSound } from '../utils/ringtone'
 
-const API = 'http://localhost:5000/api'
-const SIGNALING_SERVER = 'http://localhost:5000'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')
+const SIGNALING_SERVER = API_ORIGIN
 
 interface Message {
   id: string
@@ -85,7 +86,7 @@ export default function AdminChat() {
       ringtoneIntervalRef.current = interval
     })
 
-    socket.on('call-answered', (data) => {
+    socket.on('call-answered', () => {
       console.log('Call answered')
       stopRingtone()
       if (ringtoneIntervalRef.current) {
@@ -95,7 +96,7 @@ export default function AdminChat() {
       playNotificationSound()
     })
 
-    socket.on('ice-candidate', (data) => {
+    socket.on('ice-candidate', () => {
       console.log('Received ICE candidate')
     })
 

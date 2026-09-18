@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import {
-  TrendingUp,
   ShoppingBag,
   Heart,
   Tag,
@@ -9,7 +8,6 @@ import {
   Crown,
   Percent,
   ArrowUpRight,
-  ArrowDownRight,
 } from 'lucide-react'
 
 const fadeUp = {

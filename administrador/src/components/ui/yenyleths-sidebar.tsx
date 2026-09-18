@@ -23,6 +23,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useTheme } from '../../lib/theme'
+import { STORE_URL } from '../../lib/urls'
 
 interface SidebarProps {
   activeTab: string
@@ -244,7 +245,7 @@ export function YenylethsSidebar({ activeTab, onTabChange, onLogout, username }:
 
           {/* Store link */}
           <a
-            href="http://localhost:5175"
+            href={STORE_URL}
             className={`w-full flex items-center gap-3 rounded-lg transition-all text-muted-foreground hover:bg-muted hover:text-foreground ${isCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}`}
           >
             <Store className="h-[18px] w-[18px] flex-shrink-0" />

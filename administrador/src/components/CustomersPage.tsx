@@ -10,10 +10,7 @@ import {
   ShoppingBag,
   Star,
   Ban,
-  Trash2,
   UserPlus,
-  Filter,
-  ChevronDown,
 } from 'lucide-react'
 
 const mockCustomers = [

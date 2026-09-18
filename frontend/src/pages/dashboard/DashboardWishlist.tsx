@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import {
   Heart,
   ShoppingCart,
@@ -9,7 +10,6 @@ import {
   Share2,
   SlidersHorizontal,
   ArrowUpDown,
-  X,
   Search,
   Star,
   Clock,
@@ -258,7 +258,7 @@ const sortOptions = [
   { value: 'name', label: 'Nombre A-Z' },
 ]
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -266,7 +266,7 @@ const containerVariants = {
   },
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
   visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: 'easeOut' } },
 }

@@ -15,8 +15,9 @@ import {
 import Badge from './ui/Badge'
 import Button from './ui/Button'
 import { getImageUrl } from '../lib/image'
+import { STORE_URL } from '../lib/urls'
 
-const API = 'http://localhost:5000/api'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 interface Category {
   id: string
@@ -539,7 +540,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             <div className="p-6 border-t border-line bg-market/5">
               <div className="flex items-center justify-between">
                 <a
-                  href={`http://localhost:5175/category/${selectedCategory.slug}`}
+                  href={`${STORE_URL}/category/${selectedCategory.slug}`}
                   className="flex items-center gap-2 text-market-deep hover:text-market-deep font-medium transition-colors"
                 >
                   <ExternalLink size={18} />

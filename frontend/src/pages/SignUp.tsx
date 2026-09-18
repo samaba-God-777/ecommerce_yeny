@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { useAuth } from '../context/AuthContext'
 import api from '../lib/api'
 import { FcGoogle } from 'react-icons/fc'
 import { ShoppingBag, Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
@@ -15,7 +14,6 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
-  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

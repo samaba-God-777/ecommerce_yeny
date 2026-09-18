@@ -8,10 +8,8 @@ import {
   Trash2,
   MessageSquare,
   Package,
-  ChevronDown,
   X,
   Check,
-  Image as ImageIcon,
 } from 'lucide-react'
 
 type TabId = 'write' | 'reviews'
@@ -171,7 +169,7 @@ export default function DashboardReviews() {
     setEditingId(review.id)
   }
 
-  const handleSaveEdit = (id: string) => {
+  const handleSaveEdit = (_id: string) => {
     setEditingId(null)
   }
 

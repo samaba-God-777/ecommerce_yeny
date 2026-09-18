@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../lib/theme'
 import { toast } from 'react-hot-toast'
+import { STORE_URL } from '../lib/urls'
 
 interface HeaderProps {
   title: string
@@ -281,7 +282,7 @@ export default function Header({ title, subtitle, onLogout, onTabChange }: Heade
                     Configuración
                   </button>
                   <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = 'http://localhost:5175'; setMenuOpen(false) }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = STORE_URL; setMenuOpen(false) }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors cursor-pointer"
                   >
                     <Store size={16} className="text-muted-foreground" />

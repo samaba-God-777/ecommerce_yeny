@@ -78,27 +78,6 @@ const activeReturns: ReturnRequest[] = [
   },
 ]
 
-const completedReturns: ReturnRequest[] = [
-  {
-    id: 'RT-7798',
-    orderId: 'YB-2801',
-    product: 'Abrigo Lino Beige',
-    productImage: '🧥',
-    reason: 'Cambio de talla',
-    status: 'completed',
-    dateSubmitted: '18 Jun 2026',
-  },
-  {
-    id: 'RT-7775',
-    orderId: 'YB-2780',
-    product: 'Retrato Familiar en Marco Dorado',
-    productImage: '🖼️',
-    reason: 'Producto no llegó',
-    status: 'completed',
-    dateSubmitted: '14 Jun 2026',
-  },
-]
-
 const refundHistory: HistoryItem[] = [
   { id: 'RF-9012', orderId: 'YB-2801', product: 'Abrigo Lino Beige', type: 'refund', amount: '$89.00', date: '20 Jun 2026', status: 'completed' },
   { id: 'RF-8998', orderId: 'YB-2780', product: 'Retrato Familiar en Marco Dorado', type: 'store_credit', amount: '$145.00', date: '16 Jun 2026', status: 'completed' },
@@ -289,7 +268,7 @@ export default function ReturnsRefunds() {
                 <div className="md:col-span-2">
                   <label className="mb-1.5 block text-xs font-medium text-brown/60">Fotos del producto (opcional)</label>
                   <div className="flex flex-wrap gap-3">
-                    {uploadedFiles.map((file, i) => (
+                    {uploadedFiles.map((_file, i) => (
                       <div key={i} className="relative flex h-20 w-20 items-center justify-center rounded-xl border border-brown/10 bg-white">
                         <Image size={20} className="text-brown/30" />
                         <button

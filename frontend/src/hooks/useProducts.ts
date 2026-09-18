@@ -5,6 +5,10 @@ import { fetchApiProducts } from '../lib/api'
 import { resolveProductImage } from '../data/productImages'
 import type { Product } from '../types'
 
+// Origen del backend para las imagenes subidas: sale del entorno igual que el
+// API (lib/api.ts), quitando el /api final. Localhost queda para desarrollo.
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')
+
 function slugify(text: string) {
   return text
     .toLowerCase()
@@ -40,7 +44,7 @@ export function useProducts() {
         }
         // Si es del API, agregar la URL base
         if (imagePath.startsWith('/uploads')) {
-          imagePath = `http://localhost:5000${imagePath}`
+          imagePath = `${API_ORIGIN}${imagePath}`
         }
 
         return {

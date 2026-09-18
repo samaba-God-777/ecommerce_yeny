@@ -2,19 +2,12 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Bell,
-  Check,
   CheckCheck,
   Trash2,
   Package,
-  Tag,
   Settings,
   Gift,
-  Truck,
-  Star,
-  CreditCard,
-  AlertCircle,
   Megaphone,
-  Shield,
 } from 'lucide-react'
 
 type NotificationType = 'order' | 'promotion' | 'system' | 'discount'

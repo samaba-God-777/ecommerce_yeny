@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import {
   ShoppingCart,
   Trash2,
@@ -176,12 +177,12 @@ const recommendedProducts: Product[] = [
   },
 ]
 
-const listVariants = {
+const listVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, x: -20 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: 'easeOut' } },
   exit: { opacity: 0, x: 20, height: 0, marginBottom: 0, padding: 0, transition: { duration: 0.3 } },
@@ -194,7 +195,8 @@ export default function DashboardCart() {
   const [promoApplied, setPromoApplied] = useState(false)
   const [giftWrap, setGiftWrap] = useState(false)
   const [notes, setNotes] = useState('')
-  const [savedItems, setSavedItems] = useState<string[]>([])
+  // Solo se escribe: la seccion de "guardados" aun no se muestra en pantalla.
+  const [, setSavedItems] = useState<string[]>([])
 
   const cartItems = items.length > 0 ? items : mockCartItems
   const displaySubtotal = items.length > 0 ? subtotal : mockCartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0)

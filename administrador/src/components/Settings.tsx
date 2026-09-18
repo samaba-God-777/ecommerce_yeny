@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import Button from './ui/Button'
 import Input from './ui/Input'
+import { STORE_URL, API_ORIGIN } from '../lib/urls'
 
 interface SettingsProps {
   username: string
@@ -193,11 +194,11 @@ export default function SettingsPage({ username }: SettingsProps) {
                   </div>
                   <div className="p-4 bg-beige/50 rounded-xl">
                     <p className="text-xs text-muted-foreground mb-1">Backend</p>
-                    <p className="font-semibold text-brown">localhost:5000</p>
+                    <p className="font-semibold text-brown break-all">{API_ORIGIN}</p>
                   </div>
                   <div className="p-4 bg-beige/50 rounded-xl">
                     <p className="text-xs text-muted-foreground mb-1">Frontend</p>
-                    <p className="font-semibold text-brown">localhost:5175</p>
+                    <p className="font-semibold text-brown break-all">{STORE_URL}</p>
                   </div>
                   <div className="p-4 bg-beige/50 rounded-xl">
                     <p className="text-xs text-muted-foreground mb-1">Base de datos</p>

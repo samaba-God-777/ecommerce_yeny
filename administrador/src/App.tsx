@@ -22,6 +22,7 @@ import PaymentsConfig from './components/PaymentsConfig'
 import ReportsPage from './components/ReportsPage'
 import Dashboard from './features/dashboard/components/DashboardHome'
 import api from './lib/api'
+import { STORE_URL } from './lib/urls'
 
 interface Category { id: string; name: string; slug: string; image: string | null }
 interface Product {
@@ -31,7 +32,8 @@ interface Product {
   isBestSeller?: boolean; isTrending?: boolean
 }
 
-const SOCKET_URL = 'http://localhost:5000'
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')
+const SOCKET_URL = API_ORIGIN
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -64,7 +66,9 @@ export default function App() {
       toast.error(`⚠️ Stock bajo: ${data.productName} (${data.stock} restantes)`, { duration: 8000 })
     })
 
-    return () => socket.disconnect()
+    // Con cuerpo de bloque: disconnect() devuelve el socket y React espera
+    // que la limpieza no devuelva nada.
+    return () => { socket.disconnect() }
   }, [isAuthenticated])
 
   // Auth check using JWT
@@ -207,9 +211,9 @@ export default function App() {
             <button onClick={async () => {
               const u = (document.getElementById('login-user') as HTMLInputElement).value
               const p = (document.getElementById('login-pass') as HTMLInputElement).value
-              try { await handleLogin(u, p) } catch (e) { alert(e.message) }
+              try { await handleLogin(u, p) } catch (e) { alert(e instanceof Error ? e.message : 'No se pudo iniciar sesión') }
             }} className="w-full px-6 py-3 bg-ink text-primary-foreground rounded-lg font-semibold hover:bg-market transition">Iniciar Sesión</button>
-            <a href="http://localhost:5175/" className="block text-center text-sm text-market hover:text-market-deep font-medium">Ir a la Tienda</a>
+            <a href={`${STORE_URL}/`} className="block text-center text-sm text-market hover:text-market-deep font-medium">Ir a la Tienda</a>
           </div>
         </div>
       </div>

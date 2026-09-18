@@ -7,135 +7,6 @@ import {
   X, DollarSign, FileText, Package
 } from 'lucide-react'
 
-// Extended mock orders with phone, address, item details and receipt
-const mockOrdersData = [
-  { 
-    id: '#1234', 
-    customer: 'Willy', 
-    email: 'degraciawilliams10@gmail.com', 
-    phone: '+507 6677-1234',
-    total: 2850, 
-    items: 3, 
-    status: 'pending', 
-    payment: 'pagado', 
-    date: '2026-06-30T10:30:00', 
-    address: 'Calle 50, Torres del Sol, Apt 14B, Ciudad de Panamá, Panamá',
-    productsList: [
-      { name: 'Conjunto Deportivo Azul Marino', quantity: 2, price: 925 },
-      { name: 'Sombrero Pintado Panameño', quantity: 1, price: 1000 }
-    ],
-    receipt: '/yappy_receipt_proof.png'
-  },
-  { 
-    id: '#1233', 
-    customer: 'María García', 
-    email: 'maria@email.com', 
-    phone: '+507 6511-2233',
-    total: 4200, 
-    items: 5, 
-    status: 'shipped', 
-    payment: 'pagado', 
-    date: '2026-06-30T09:15:00', 
-    address: 'Avenida Balboa, PH Yoo, Piso 32, Ciudad de Panamá, Panamá',
-    productsList: [
-      { name: 'Jersey Alemania Retro', quantity: 2, price: 120 },
-      { name: 'Camisa de Seda Premium', quantity: 3, price: 1320 }
-    ]
-  },
-  { 
-    id: '#1232', 
-    customer: 'Ana López', 
-    email: 'ana@email.com', 
-    phone: '+507 6922-3344',
-    total: 1890, 
-    items: 2, 
-    status: 'delivered', 
-    payment: 'pagado', 
-    date: '2026-06-29T16:45:00', 
-    address: 'Costa del Este, PH Regalia, Apt 8A, Panamá',
-    productsList: [
-      { name: 'Perfume Chanel No. 5', quantity: 1, price: 60 },
-      { name: 'Crocs Edición Pokémon', quantity: 1, price: 1830 }
-    ]
-  },
-  { 
-    id: '#1231', 
-    customer: 'Carlos Ruiz', 
-    email: 'carlos@email.com', 
-    phone: '+507 6233-4455',
-    total: 3450, 
-    items: 4, 
-    status: 'processing', 
-    payment: 'pagado', 
-    date: '2026-06-29T14:20:00', 
-    address: 'El Cangrejo, Calle 49 Oeste, Edificio Tulipán, Panamá',
-    productsList: [
-      { name: 'Camisa de Seda Premium', quantity: 4, price: 862.5 }
-    ]
-  },
-  { 
-    id: '#1230', 
-    customer: 'Laura Martínez', 
-    email: 'laura@email.com', 
-    phone: '+507 6144-5566',
-    total: 5600, 
-    items: 7, 
-    status: 'delivered', 
-    payment: 'pagado', 
-    date: '2026-06-29T11:00:00', 
-    address: 'San Francisco, Calle 74, Casa 25, Ciudad de Panamá, Panamá',
-    productsList: [
-      { name: 'Conjunto Deportivo Azul Marino', quantity: 4, price: 900 },
-      { name: 'Sombrero Pintado Panameño', quantity: 2, price: 1000 }
-    ]
-  },
-  { 
-    id: '#1229', 
-    customer: 'Pedro Sánchez', 
-    email: 'pedro@email.com', 
-    phone: '+507 6088-7766',
-    total: 2100, 
-    items: 2, 
-    status: 'cancelled', 
-    payment: 'reembolsado', 
-    date: '2026-06-28T18:30:00', 
-    address: 'Brisas del Golf, Calle 3A Norte, Casa 112, San Miguelito, Panamá',
-    productsList: [
-      { name: 'Crocs Edición Pokémon', quantity: 2, price: 1050 }
-    ]
-  },
-  { 
-    id: '#1228', 
-    customer: 'Sofia Hernández', 
-    email: 'sofia@email.com', 
-    phone: '+507 6499-8800',
-    total: 3800, 
-    items: 4, 
-    status: 'delivered', 
-    payment: 'pagado', 
-    date: '2026-06-28T15:10:00', 
-    address: 'Albrook, Calle principal, Casa 305B, Ancón, Panamá',
-    productsList: [
-      { name: 'Sombrero Pintado Panameño', quantity: 2, price: 1000 },
-      { name: 'Camisa de Seda Premium', quantity: 2, price: 900 }
-    ]
-  },
-  { 
-    id: '#1227', 
-    customer: 'Diego Torres', 
-    email: 'diego@email.com', 
-    phone: '+507 6822-1133',
-    total: 1750, 
-    items: 1, 
-    status: 'shipped', 
-    payment: 'pagado', 
-    date: '2026-06-28T12:00:00', 
-    address: 'Clayton, Sendero de los Árboles, Casa 89, Panamá',
-    productsList: [
-      { name: 'Conjunto Deportivo Azul Marino', quantity: 1, price: 1750 }
-    ]
-  },
-]
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; icon: any }> = {
   pending: { label: 'Pendiente', color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/30', icon: Clock },
@@ -148,6 +19,12 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; i
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+}
+
+interface OrderItem {
+  name: string
+  price: number
+  quantity: number
 }
 
 export default function OrdersPage() {
@@ -197,7 +74,7 @@ export default function OrdersPage() {
   }
 
   const updateOrderPayment = async (id: string, newPayment: string) => {
-    const paymentMap = { 'pagado': 'paid', 'reembolsado': 'refunded', 'pendiente': 'pending' }
+    const paymentMap: Record<string, string> = { 'pagado': 'paid', 'reembolsado': 'refunded', 'pendiente': 'pending' }
     try {
       await api.patch(`/orders/${id}/payment`, { paymentStatus: paymentMap[newPayment] || newPayment })
       fetchOrders()
@@ -268,7 +145,7 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody>
-              ${(order.productsList || []).map(p => `
+              ${(order.productsList || []).map((p: OrderItem) => `
                 <tr>
                   <td>${p.name}</td>
                   <td style="text-align: right;">$${p.price.toLocaleString('es-PA', { minimumFractionDigits: 2 })}</td>
@@ -629,7 +506,7 @@ export default function OrdersPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {(selectedOrder.productsList || []).map((p, idx) => (
+                          {(selectedOrder.productsList || []).map((p: OrderItem, idx: number) => (
                             <tr key={idx} className="border-b border-border/50 last:border-0">
                               <td className="p-3 font-medium text-foreground">{p.name}</td>
                               <td className="p-3 text-right text-foreground">${p.price.toLocaleString('es-PA')}</td>

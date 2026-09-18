@@ -132,7 +132,7 @@ export default function DashboardHome() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
-        {stats.map((stat, i) => (
+        {stats.map((stat) => (
           <motion.div
             key={stat.label}
             variants={item}
@@ -262,7 +262,7 @@ export default function DashboardHome() {
           { label: 'Escribir Reseña', icon: MessageSquare, to: '/dashboard/reviews' },
           { label: 'Invitar Amigos', icon: Gift, to: '/dashboard/referrals' },
           { label: 'Historial', icon: Eye, to: '/dashboard/recently-viewed' },
-        ].map((action, i) => (
+        ].map((action) => (
           <Link
             key={action.label}
             to={action.to}
