@@ -1,7 +1,11 @@
-# Los dominios de abajo son los que Render arma con el nombre de cada servicio.
-# La tienda quedó publicada como ecommerce-yeny-1.onrender.com, así que si los
-# nombres reales no coinciden hay que corregir las URLs (o ponerlas en el panel
-# de Render, en Environment de cada servicio).
+# Dominios reales de los servicios ya publicados (18/09/2026). Los nombres de
+# aqui abajo no coinciden con los del panel (alli son ecommerce_yeny,
+# ecommerce_yeny-1 y ecommerce_yeny-2, con guion bajo), pero las URLs si son
+# las buenas, que es lo que consume el codigo:
+#
+#   backend (node)   -> https://ecommerce-yeny.onrender.com
+#   tienda (static)  -> https://ecommerce-yeny-1.onrender.com
+#   panel  (static)  -> https://ecommerce-yeny-2.onrender.com
 services:
   - type: web
     name: ecommerce-yeny-backend
@@ -28,7 +32,7 @@ services:
       # Dominios que pueden llamar al API. Sin esto el navegador bloquea a la
       # tienda y al panel por CORS.
       - key: CORS_ORIGINS
-        value: https://ecommerce-yeny-1.onrender.com,https://ecommerce-yeny-frontend.onrender.com,https://ecommerce-yeny-admin.onrender.com
+        value: https://ecommerce-yeny-1.onrender.com,https://ecommerce-yeny-2.onrender.com
       # A donde apunta el enlace de "recuperar contraseña" que va en el correo.
       # Es el dominio real de la tienda publicada, no el nombre del blueprint.
       - key: APP_URL
@@ -59,10 +63,10 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://ecommerce-yeny-backend.onrender.com/api
-      # Enlace "Panel Admin" de la tienda. Cambiar si el admin usa otro dominio.
+        value: https://ecommerce-yeny.onrender.com/api
+      # Enlace "Panel Admin" de la tienda.
       - key: VITE_ADMIN_URL
-        value: https://ecommerce-yeny-admin.onrender.com
+        value: https://ecommerce-yeny-2.onrender.com
 
   - type: static
     name: ecommerce-yeny-admin
@@ -75,7 +79,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://ecommerce-yeny-backend.onrender.com/api
+        value: https://ecommerce-yeny.onrender.com/api
       # Enlaces "Ir a la Tienda" del panel: dominio real de la tienda publicada.
       - key: VITE_STORE_URL
         value: https://ecommerce-yeny-1.onrender.com
