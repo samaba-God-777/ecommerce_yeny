@@ -30,7 +30,23 @@ const server = http.createServer(app)
 const PORT = process.env.PORT || 5000
 
 // Initialize database
-connectToMongoDB().catch(console.error)
+//
+// El servidor levanta aunque Mongo falle (si no, el hosting reinicia en bucle),
+// pero entonces cada peticion responde 500 sin decir por que. Se guarda el
+// motivo para mostrarlo en el health check y se registra completo en el log.
+let dbError = null
+
+// Algunos errores del driver traen la URI dentro: se tapa usuario y contrasena
+// antes de mostrar nada.
+const sinCredenciales = (msg) => String(msg || '').replace(/\/\/[^@\s]*@/g, '//***:***@')
+
+connectToMongoDB()
+  .then(() => { dbError = null })
+  .catch(err => {
+    dbError = sinCredenciales(err.message)
+    logger.error(`No se pudo conectar a MongoDB: ${dbError}`)
+    logger.error('Revisa MONGODB_URI (la contrasena va codificada para URL) y la lista de IPs en Atlas.')
+  })
 
 // Initialize Socket.io
 const io = initializeSignalingServer(server)
@@ -76,8 +92,18 @@ app.use('/api/reports', reportRoutes)
 app.use('/api/payments', paymentRoutes)
 
 // Health check
+// Devuelve 200 aunque la base este caida, para que el hosting no reinicie en
+// bucle, pero dice el estado: sin esto el panel marca "Deployed" y la app
+// responde 500 en todo sin pista de la causa. El motivo del fallo no expone
+// credenciales (la URI nunca se incluye).
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'Yenyleths API running', timestamp: new Date().toISOString() })
+  res.json({
+    status: 'ok',
+    message: 'Yenyleths API running',
+    db: dbError ? 'sin conexion' : 'conectada',
+    ...(dbError && { dbError }),
+    timestamp: new Date().toISOString()
+  })
 })
 
 // Sitemap
