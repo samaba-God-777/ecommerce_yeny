@@ -1,12 +1,16 @@
 import { Router } from 'express'
-import { registerUser, loginUser, getUserById } from '../services/authService.js'
+import { registerUser, loginUser, getUserById, requestPasswordReset, resetPassword } from '../services/authService.js'
 import { updateProfile, updatePassword, getAllUsers } from '../models/userModel.js'
 import { authenticate, requireAdmin } from '../middleware/auth.js'
 import validate from '../middleware/validate.js'
-import { loginSchema, registerSchema } from '../schemas/index.js'
+import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from '../schemas/index.js'
 import asyncHandler from '../middleware/asyncHandler.js'
 
 const router = Router()
+
+// A donde apunta el enlace del correo: la tienda, no el API. En produccion se
+// fija con APP_URL; si no esta, se usa el origen que mando la peticion.
+const appUrl = (req) => process.env.APP_URL || req.get('origin') || 'http://localhost:5175'
 
 router.post('/register', validate(registerSchema), asyncHandler(async (req, res) => {
   const { username, email, password } = req.body
@@ -27,6 +31,24 @@ router.post('/login', validate(loginSchema), asyncHandler(async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000
   })
 
+  res.json(result)
+}))
+
+// ── Recuperar contrasena ──
+// Siempre responde lo mismo, exista o no la cuenta, para no revelar quien
+// esta registrado. El limitador de /api/auth ya frena los intentos seguidos.
+router.post('/forgot-password', validate(forgotPasswordSchema), asyncHandler(async (req, res) => {
+  await requestPasswordReset(req.body.email, appUrl(req))
+  res.json({
+    success: true,
+    message: 'Si el correo está registrado, te enviamos un enlace para recuperar tu contraseña.'
+  })
+}))
+
+router.post('/reset-password', validate(resetPasswordSchema), asyncHandler(async (req, res) => {
+  const { token, password } = req.body
+  const result = await resetPassword(token, password)
+  if (!result.success) return res.status(400).json(result)
   res.json(result)
 }))
 

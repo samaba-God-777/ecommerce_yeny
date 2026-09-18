@@ -76,3 +76,32 @@ export async function updateProfile(id, data) {
 export function verifyPassword(user, password) {
   return bcrypt.compareSync(password, user.passwordHash)
 }
+
+// ── Recuperacion de contrasena ────────────────────────────────────────────────
+// En la base solo queda el hash del token: si alguien lee la base, no puede
+// armar el enlace. El token en claro viaja una sola vez, en el correo.
+
+export async function savePasswordResetToken(id, tokenHash, expiresAt) {
+  const db = getDb()
+  await db.collection('users').updateOne(
+    { _id: id },
+    { $set: { resetTokenHash: tokenHash, resetTokenExpires: expiresAt } }
+  )
+}
+
+export async function getUserByResetToken(tokenHash) {
+  const db = getDb()
+  const user = await db.collection('users').findOne({
+    resetTokenHash: tokenHash,
+    resetTokenExpires: { $gt: new Date() }
+  })
+  return formatUser(user)
+}
+
+export async function clearPasswordResetToken(id) {
+  const db = getDb()
+  await db.collection('users').updateOne(
+    { _id: id },
+    { $unset: { resetTokenHash: '', resetTokenExpires: '' } }
+  )
+}

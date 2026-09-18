@@ -1,3 +1,7 @@
+# Los dominios de abajo son los que Render arma con el nombre de cada servicio.
+# La tienda quedó publicada como ecommerce-yeny-1.onrender.com, así que si los
+# nombres reales no coinciden hay que corregir las URLs (o ponerlas en el panel
+# de Render, en Environment de cada servicio).
 services:
   - type: web
     name: ecommerce-yeny-backend
@@ -16,12 +20,37 @@ services:
         value: 7d
       - key: MOCK_PAYMENT_MODE
         value: false
+      # Dominios que pueden llamar al API. Sin esto el navegador bloquea a la
+      # tienda y al panel por CORS.
+      - key: CORS_ORIGINS
+        value: https://ecommerce-yeny-frontend.onrender.com,https://ecommerce-yeny-admin.onrender.com
+      # A donde apunta el enlace de "recuperar contraseña" que va en el correo.
+      - key: APP_URL
+        value: https://ecommerce-yeny-frontend.onrender.com
+      # Envío del correo de recuperación (Gmail: contraseña de aplicación,
+      # no la del correo). Sin estas variables el enlace queda en el log.
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
 
   - type: static
     name: ecommerce-yeny-frontend
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
+    # La tienda es una SPA: sin esta regla, entrar directo a /login o abrir el
+    # enlace de /reset-password del correo responde 404.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
         value: https://ecommerce-yeny-backend.onrender.com/api
@@ -34,6 +63,10 @@ services:
     rootDir: administrador
     buildCommand: npm install && npm run build
     staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
         value: https://ecommerce-yeny-backend.onrender.com/api

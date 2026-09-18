@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser'
 import http from 'http'
 import { initializeSignalingServer, getIO } from './modules/signalingServer.js'
 import { connectToMongoDB, getDb } from './src/database/connection.js'
-import { apiLimiter, authLimiter } from './src/middleware/rateLimiter.js'
+import { apiLimiter, authLimiter, passwordResetLimiter } from './src/middleware/rateLimiter.js'
 import { errorHandler, notFoundHandler } from './src/middleware/errorHandler.js'
 import asyncHandler from './src/middleware/asyncHandler.js'
 import { setIO } from './src/services/socketService.js'
@@ -25,7 +25,9 @@ import paymentRoutes from './routes/payments.js'
 
 const app = express()
 const server = http.createServer(app)
-const PORT = 5000
+// Render (y cualquier hosting) asigna el puerto por variable de entorno y
+// espera que el servicio escuche ahi: con un puerto fijo no detecta la app.
+const PORT = process.env.PORT || 5000
 
 // Initialize database
 connectToMongoDB().catch(console.error)
@@ -36,7 +38,19 @@ setIO(io)
 
 // Global middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5177', 'http://localhost:5178', 'http://localhost:5179', 'http://localhost:5000'], credentials: true }))
+// Los dominios permitidos salen de CORS_ORIGINS (separados por coma). Sin esa
+// variable solo valen los puertos de desarrollo, que es lo que habia antes: en
+// produccion el navegador bloquea al front si su dominio no esta en la lista.
+const DEV_ORIGINS = [
+  'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175',
+  'http://localhost:5176', 'http://localhost:5177', 'http://localhost:5178',
+  'http://localhost:5179', 'http://localhost:5000'
+]
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+  : DEV_ORIGINS
+
+app.use(cors({ origin: allowedOrigins, credentials: true }))
 app.use(morgan('combined', { stream: { write: msg => logger.info(msg.trim()) } }))
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ extended: true }))
@@ -48,6 +62,9 @@ app.use('/uploads', express.static('uploads'))
 app.use('/images', express.static('../frontend/src/assets/images/products'))
 
 // Routes
+// La recuperacion lleva su propio cupo, separado del de intentos de login.
+app.use('/api/auth/forgot-password', passwordResetLimiter)
+app.use('/api/auth/reset-password', passwordResetLimiter)
 app.use('/api/auth', authLimiter, authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/categories', categoryRoutes)

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Lock, User, Eye, EyeOff, ShoppingBag, Mail, UserPlus, ArrowLeft, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
@@ -47,7 +47,11 @@ export default function Login() {
         navigate('/dashboard')
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Usuario o contraseña incorrectos')
+      setError(
+        err.response?.data?.error ||
+        (err.response ? 'Usuario o contraseña incorrectos'
+                      : 'No pudimos conectar con el servidor. Revisa tu conexión e intenta de nuevo.')
+      )
     } finally {
       setIsLoading(false)
     }
@@ -79,7 +83,11 @@ export default function Login() {
         setTimeout(() => navigate('/dashboard'), 1000)
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al crear la cuenta')
+      setError(
+        err.response?.data?.error ||
+        (err.response ? 'Error al crear la cuenta'
+                      : 'No pudimos conectar con el servidor. Revisa tu conexión e intenta de nuevo.')
+      )
     } finally {
       setIsLoading(false)
     }
@@ -247,6 +255,15 @@ export default function Login() {
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
+              </div>
+
+              <div className="flex justify-end -mt-2">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-amber-700 hover:text-amber-800 font-medium"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
               </div>
 
               {error && (

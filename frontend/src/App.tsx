@@ -20,6 +20,8 @@ const SearchResults = lazy(() => import('./pages/SearchResults'))
 const Account = lazy(() => import('./pages/Account'))
 const Login = lazy(() => import('./pages/Login'))
 const SignUp = lazy(() => import('./pages/SignUp'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 
 // Dashboard pages
@@ -88,6 +90,8 @@ function App() {
                   }
                 />
                 <Route path="/signup" element={<StorefrontLayout><SignUp /></StorefrontLayout>} />
+                <Route path="/forgot-password" element={<Suspense fallback={<LoadingScreen />}><ForgotPassword /></Suspense>} />
+                <Route path="/reset-password" element={<Suspense fallback={<LoadingScreen />}><ResetPassword /></Suspense>} />
                 <Route path="/politica-de-privacidad" element={<StorefrontLayout><PrivacyPolicy /></StorefrontLayout>} />
 
                 {/* Dashboard routes */}
