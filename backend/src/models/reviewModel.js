@@ -1,14 +1,29 @@
 import { getDb } from '../database/connection.js'
 import { v4 as uuidv4 } from 'uuid'
 
-export function getReviewsByProduct(productId) {
-  return getDb().prepare('SELECT * FROM reviews WHERE productId = ? ORDER BY createdAt DESC').all(productId)
+function formatReview(doc) {
+  if (!doc) return null
+  const { _id, ...rest } = doc
+  return { id: _id.toString(), ...rest }
 }
 
-export function createReview({ productId, author, rating, comment }) {
+export async function getReviewsByProduct(productId) {
+  const db = getDb()
+  const reviews = await db.collection('reviews').find({ productId }).sort({ createdAt: -1 }).toArray()
+  return reviews.map(formatReview)
+}
+
+export async function createReview({ productId, author, rating, comment }) {
+  const db = getDb()
   const id = uuidv4()
-  getDb().prepare(
-    'INSERT INTO reviews (id, productId, author, rating, comment) VALUES (?, ?, ?, ?, ?)'
-  ).run(id, productId, author, rating, comment)
-  return getDb().prepare('SELECT * FROM reviews WHERE id = ?').get(id)
+  const review = {
+    _id: id,
+    productId,
+    author,
+    rating: Number(rating),
+    comment,
+    createdAt: new Date()
+  }
+  await db.collection('reviews').insertOne(review)
+  return formatReview(review)
 }

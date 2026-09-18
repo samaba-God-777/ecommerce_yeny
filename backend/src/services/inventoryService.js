@@ -1,20 +1,23 @@
 import { getDb } from '../database/connection.js'
 import { getLowStock as getLowStockProducts } from '../models/productModel.js'
 
-export function decrementStock(productId, quantity) {
-  getDb().prepare('UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?').run(quantity, productId, quantity)
+export async function decrementStock(productId, quantity) {
+  const db = getDb()
+  await db.collection('products').updateOne({ _id: productId, stock: { $gte: quantity } }, { $inc: { stock: -quantity } })
 }
 
-export function restoreStock(productId, quantity) {
-  getDb().prepare('UPDATE products SET stock = stock + ? WHERE id = ?').run(quantity, productId)
+export async function restoreStock(productId, quantity) {
+  const db = getDb()
+  await db.collection('products').updateOne({ _id: productId }, { $inc: { stock: quantity } })
 }
 
-export function checkLowStock(threshold = 5) {
+export async function checkLowStock(threshold = 5) {
   return getLowStockProducts(threshold)
 }
 
-export function getStockAlerts() {
-  const lowStock = checkLowStock(5)
-  const outOfStock = getDb().prepare('SELECT * FROM products WHERE stock = 0').all()
+export async function getStockAlerts() {
+  const db = getDb()
+  const lowStock = await checkLowStock(5)
+  const outOfStock = await db.collection('products').find({ stock: 0 }).toArray()
   return { lowStock, outOfStock }
 }

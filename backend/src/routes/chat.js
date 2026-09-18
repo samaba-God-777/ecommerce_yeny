@@ -6,14 +6,26 @@ import { v4 as uuidv4 } from 'uuid'
 
 const router = Router()
 
+function formatConversation(doc) {
+  if (!doc) return null
+  const { _id, ...rest } = doc
+  return { id: _id.toString(), ...rest }
+}
+
+function formatMessage(doc) {
+  if (!doc) return null
+  const { _id, ...rest } = doc
+  return { id: _id.toString(), ...rest }
+}
+
 router.get('/conversations', asyncHandler(async (req, res) => {
   const db = getDb()
   const onlineUsers = getOnlineUsers()
   const onlineUserIds = onlineUsers.map(u => u.userId.toLowerCase())
 
-  const conversations = db.prepare('SELECT * FROM conversations ORDER BY lastMessageTime DESC').all()
+  const conversations = await db.collection('conversations').find().sort({ lastMessageTime: -1 }).toArray()
   res.json(conversations.map(c => ({
-    ...c,
+    ...formatConversation(c),
     status: onlineUserIds.includes(c.customerName?.toLowerCase()) ? 'online' : 'offline'
   })))
 }))
@@ -23,9 +35,10 @@ router.get('/online-users', asyncHandler(async (req, res) => {
 }))
 
 router.get('/conversations/:id', asyncHandler(async (req, res) => {
-  const conv = getDb().prepare('SELECT * FROM conversations WHERE id = ?').get(req.params.id)
+  const db = getDb()
+  const conv = await db.collection('conversations').findOne({ _id: req.params.id })
   if (!conv) return res.status(404).json({ error: 'Conversación no encontrada' })
-  res.json(conv)
+  res.json(formatConversation(conv))
 }))
 
 router.post('/conversations', asyncHandler(async (req, res) => {
@@ -34,46 +47,61 @@ router.post('/conversations', asyncHandler(async (req, res) => {
   const id = `conv-${Date.now()}`
   const avatar = (customerName || 'C').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
-  db.prepare(
-    'INSERT INTO conversations (id, customerName, customerEmail, customerId, lastMessage, lastMessageTime, unread, avatar) VALUES (?, ?, ?, ?, ?, datetime(\'now\'), 0, ?)'
-  ).run(id, customerName || 'Cliente', customerEmail || '', customerId || '', '', avatar)
+  const conversation = {
+    _id: id,
+    customerName: customerName || 'Cliente',
+    customerEmail: customerEmail || '',
+    customerId: customerId || '',
+    lastMessage: '',
+    lastMessageTime: new Date(),
+    unread: 0,
+    avatar
+  }
 
-  res.status(201).json(db.prepare('SELECT * FROM conversations WHERE id = ?').get(id))
+  await db.collection('conversations').insertOne(conversation)
+  res.status(201).json(formatConversation(conversation))
 }))
 
 router.get('/conversations/:id/messages', asyncHandler(async (req, res) => {
-  const messages = getDb().prepare(
-    'SELECT * FROM messages WHERE conversationId = ? ORDER BY timestamp ASC'
-  ).all(req.params.id)
-  res.json(messages)
+  const db = getDb()
+  const messages = await db.collection('messages').find({ conversationId: req.params.id }).sort({ timestamp: 1 }).toArray()
+  res.json(messages.map(formatMessage))
 }))
 
 router.post('/conversations/:id/messages', asyncHandler(async (req, res) => {
   const db = getDb()
-  const conv = db.prepare('SELECT * FROM conversations WHERE id = ?').get(req.params.id)
+  const conv = await db.collection('conversations').findOne({ _id: req.params.id })
   if (!conv) return res.status(404).json({ error: 'Conversación no encontrada' })
 
   const { sender, senderName, text } = req.body
   const msgId = `msg-${Date.now()}`
 
-  db.prepare(
-    'INSERT INTO messages (id, conversationId, sender, senderName, text, timestamp) VALUES (?, ?, ?, ?, ?, datetime(\'now\'))'
-  ).run(msgId, req.params.id, sender || 'customer', senderName || 'Cliente', text)
+  const message = {
+    _id: msgId,
+    conversationId: req.params.id,
+    sender: sender || 'customer',
+    senderName: senderName || 'Cliente',
+    text,
+    timestamp: new Date()
+  }
 
-  db.prepare(
-    'UPDATE conversations SET lastMessage = ?, lastMessageTime = datetime(\'now\'), unread = CASE WHEN ? = \'customer\' THEN unread + 1 ELSE unread END WHERE id = ?'
-  ).run(text, sender || 'customer', req.params.id)
+  await db.collection('messages').insertOne(message)
 
-  res.status(201).json({ id: msgId, conversationId: req.params.id, sender, senderName, text, timestamp: new Date().toISOString() })
+  const update = { lastMessage: text, lastMessageTime: new Date() }
+  if (sender === 'customer') update.$inc = { unread: 1 }
+  await db.collection('conversations').updateOne({ _id: req.params.id }, { $set: { lastMessage: text, lastMessageTime: new Date() }, ...(sender === 'customer' ? { $inc: { unread: 1 } } : {}) })
+
+  res.status(201).json(formatMessage(message))
 }))
 
 router.patch('/conversations/:id/read', asyncHandler(async (req, res) => {
   const db = getDb()
-  const conv = db.prepare('SELECT * FROM conversations WHERE id = ?').get(req.params.id)
+  const conv = await db.collection('conversations').findOne({ _id: req.params.id })
   if (!conv) return res.status(404).json({ error: 'Conversación no encontrada' })
 
-  db.prepare('UPDATE conversations SET unread = 0 WHERE id = ?').run(req.params.id)
-  res.json(db.prepare('SELECT * FROM conversations WHERE id = ?').get(req.params.id))
+  await db.collection('conversations').updateOne({ _id: req.params.id }, { $set: { unread: 0 } })
+  const updated = await db.collection('conversations').findOne({ _id: req.params.id })
+  res.json(formatConversation(updated))
 }))
 
 export default router

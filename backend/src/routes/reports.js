@@ -8,79 +8,64 @@ router.get('/summary', asyncHandler(async (req, res) => {
   const db = getDb()
   const { period } = req.query
 
-  // Real KPIs from SQLite orders
-  const orderStats = db.prepare(`
-    SELECT
-      COUNT(*) as totalOrders,
-      COALESCE(SUM(CASE WHEN paymentStatus = 'paid' THEN total ELSE 0 END), 0) as totalRevenue,
-      COUNT(CASE WHEN paymentStatus = 'paid' THEN 1 END) as paidOrders
-    FROM orders
-  `).get()
+  const orders = await db.collection('orders').find().toArray()
+  const products = await db.collection('products').find().toArray()
+  const categories = await db.collection('categories').find().toArray()
+
+  const paidOrders = orders.filter(o => o.paymentStatus === 'paid')
+  const totalRevenue = paidOrders.reduce((sum, o) => sum + (o.total || 0), 0)
 
   const kpis = {
-    totalRevenue: orderStats.totalRevenue || 0,
-    totalOrders: orderStats.totalOrders || 0,
-    avgTicket: (orderStats.paidOrders || 0) > 0 ? Math.round(orderStats.totalRevenue / orderStats.paidOrders) : 0,
+    totalRevenue,
+    totalOrders: orders.length,
+    avgTicket: paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0,
     conversionRate: 4.2,
-    totalProducts: db.prepare('SELECT COUNT(*) as c FROM products').get().c,
-    totalStock: db.prepare('SELECT COALESCE(SUM(stock), 0) as c FROM products').get().c
+    totalProducts: products.length,
+    totalStock: products.reduce((sum, p) => sum + (p.stock || 0), 0)
   }
-
-  // Monthly sales (from orders)
-  const monthlySales = db.prepare(`
-    SELECT
-      strftime('%m', createdAt) as monthNum,
-      COALESCE(SUM(total), 0) as ventas,
-      COUNT(*) as pedidos
-    FROM orders
-    WHERE paymentStatus = 'paid'
-    GROUP BY strftime('%m', createdAt)
-    ORDER BY monthNum
-  `).all()
 
   const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
   const salesByMonth = months.map((month, i) => {
-    const monthStr = String(i + 1).padStart(2, '0')
-    const found = monthlySales.find(m => m.monthNum === monthStr)
+    const monthOrders = paidOrders.filter(o => {
+      const d = new Date(o.createdAt)
+      return d.getMonth() === i
+    })
     return {
       month,
-      ventas: found ? found.ventas : 0,
-      pedidos: found ? found.pedidos : 0
+      ventas: monthOrders.reduce((sum, o) => sum + (o.total || 0), 0),
+      pedidos: monthOrders.length
     }
   })
 
-  // Category distribution (from products)
-  const catDist = db.prepare(`
-    SELECT c.name, c.id, COALESCE(SUM(p.price * p.stock), 0) as value
-    FROM categories c
-    LEFT JOIN products p ON p.categoryId = c.id
-    GROUP BY c.id
-    HAVING value > 0
-    ORDER BY value DESC
-  `).all()
+  const catValueMap = {}
+  for (const cat of categories) {
+    catValueMap[cat.name] = 0
+  }
+  for (const p of products) {
+    const cat = categories.find(c => c._id === p.categoryId)
+    if (cat) catValueMap[cat.name] += (p.price || 0) * (p.stock || 0)
+  }
 
-  const totalCatValue = catDist.reduce((s, c) => s + c.value, 0)
+  const totalCatValue = Object.values(catValueMap).reduce((s, v) => s + v, 0)
   const pieColors = ['#f472b6', '#c8a75a', '#a78bfa', '#34d399', '#60a5fa', '#f97316', '#06b6d4', '#ef4444', '#84cc16', '#a1a1aa']
-  const topCategories = catDist.map((c, i) => ({
-    name: c.name,
-    value: totalCatValue > 0 ? Math.round((c.value / totalCatValue) * 100) : 0,
-    color: pieColors[i % pieColors.length]
-  }))
+  const topCategories = Object.entries(catValueMap)
+    .filter(([, v]) => v > 0)
+    .sort(([, a], [, b]) => b - a)
+    .map(([name, value], i) => ({
+      name,
+      value: totalCatValue > 0 ? Math.round((value / totalCatValue) * 100) : 0,
+      color: pieColors[i % pieColors.length]
+    }))
 
-  // Category counts
-  const categoryCounts = db.prepare(`
-    SELECT c.name, COUNT(p.id) as count
-    FROM categories c
-    LEFT JOIN products p ON p.categoryId = c.id
-    GROUP BY c.id
-    HAVING count > 0
-  `).all()
+  const categoryCounts = categories.map(cat => ({
+    name: cat.name,
+    count: products.filter(p => p.categoryId === cat._id).length
+  })).filter(c => c.count > 0)
 
-  // Flags counting
   const flags = {
-    flashSales: db.prepare("SELECT COUNT(*) as c FROM products WHERE isFlashSale = 1").get().c,
-    bestSellers: db.prepare("SELECT COUNT(*) as c FROM products WHERE isBestSeller = 1").get().c,
-    trending: db.prepare("SELECT COUNT(*) as c FROM products WHERE isTrending = 1").get().c
+    flashSales: products.filter(p => p.isFlashSale).length,
+    bestSellers: products.filter(p => p.isBestSeller).length,
+    trending: products.filter(p => p.isTrending).length
   }
 
   res.json({

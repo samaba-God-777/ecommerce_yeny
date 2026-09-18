@@ -9,16 +9,17 @@ import asyncHandler from '../middleware/asyncHandler.js'
 const router = Router()
 
 router.get('/product/:productId', asyncHandler(async (req, res) => {
-  const product = getProductById(req.params.productId)
+  const product = await getProductById(req.params.productId)
   if (!product) return res.status(404).json({ success: false, error: 'Producto no encontrado' })
-  res.json(getReviewsByProduct(req.params.productId))
+  const reviews = await getReviewsByProduct(req.params.productId)
+  res.json(reviews)
 }))
 
 router.post('/product/:productId', authenticate, validate(reviewSchema), asyncHandler(async (req, res) => {
-  const product = getProductById(req.params.productId)
+  const product = await getProductById(req.params.productId)
   if (!product) return res.status(404).json({ success: false, error: 'Producto no encontrado' })
 
-  const review = createReview({
+  const review = await createReview({
     productId: req.params.productId,
     author: req.body.author || req.user.username,
     rating: req.body.rating,

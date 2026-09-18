@@ -13,10 +13,9 @@ const router = Router()
 router.post('/', authenticate, validate(orderSchema), asyncHandler(async (req, res) => {
   const { items, shippingAddress, paymentMethod, customerName, customerEmail, customerPhone, couponCode } = req.body
 
-  // Validate stock
   const productDetails = []
   for (const item of items) {
-    const product = getProductById(item.productId)
+    const product = await getProductById(item.productId)
     if (!product) return res.status(400).json({ success: false, error: `Producto ${item.productId} no encontrado` })
     if (product.stock < item.quantity) return res.status(400).json({ success: false, error: `Stock insuficiente para ${product.name}` })
 
@@ -28,17 +27,15 @@ router.post('/', authenticate, validate(orderSchema), asyncHandler(async (req, r
     })
   }
 
-  // Calculate totals
   const subtotal = productDetails.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shipping = subtotal > 80 ? 0 : 8
   const tax = subtotal * 0.07
 
-  // Apply coupon if provided
   let discount = 0
   let finalSubtotal = subtotal
   let freeShipping = false
   if (couponCode) {
-    const validation = validateCoupon(couponCode, subtotal)
+    const validation = await validateCoupon(couponCode, subtotal)
     if (validation.valid) {
       if (validation.type === 'free_shipping') {
         freeShipping = true
@@ -46,13 +43,13 @@ router.post('/', authenticate, validate(orderSchema), asyncHandler(async (req, r
         discount = validation.discount
         finalSubtotal = subtotal - discount
       }
-      incrementCouponUses(couponCode)
+      await incrementCouponUses(couponCode)
     }
   }
 
   const total = finalSubtotal + (freeShipping ? 0 : shipping) + tax
 
-  const order = createOrder({
+  const order = await createOrder({
     customerId: req.user.isAdmin ? null : req.user.id,
     customerName,
     customerEmail,
@@ -76,12 +73,12 @@ router.get('/', authenticate, asyncHandler(async (req, res) => {
   if (req.query.status) filters.status = req.query.status
   if (!req.user.isAdmin) filters.customerId = req.user.id
 
-  const orders = getAllOrders(filters)
+  const orders = await getAllOrders(filters)
   res.json(orders)
 }))
 
 router.get('/:id', authenticate, asyncHandler(async (req, res) => {
-  const order = getOrderById(req.params.id)
+  const order = await getOrderById(req.params.id)
   if (!order) return res.status(404).json({ success: false, error: 'Orden no encontrada' })
   if (!req.user.isAdmin && order.customerId !== req.user.id) {
     return res.status(403).json({ success: false, error: 'Acceso denegado' })
@@ -96,7 +93,7 @@ router.patch('/:id/status', authenticate, requireAdmin, asyncHandler(async (req,
     return res.status(400).json({ success: false, error: 'Estado inválido' })
   }
 
-  const order = updateOrderStatus(req.params.id, status)
+  const order = await updateOrderStatus(req.params.id, status)
   if (!order) return res.status(404).json({ success: false, error: 'Orden no encontrada' })
 
   emitOrderStatusUpdate(order)
@@ -110,7 +107,7 @@ router.patch('/:id/payment', authenticate, requireAdmin, asyncHandler(async (req
     return res.status(400).json({ success: false, error: 'Estado de pago inválido' })
   }
 
-  const order = updateOrderPayment(req.params.id, paymentStatus)
+  const order = await updateOrderPayment(req.params.id, paymentStatus)
   if (!order) return res.status(404).json({ success: false, error: 'Orden no encontrada' })
 
   emitOrderStatusUpdate(order)

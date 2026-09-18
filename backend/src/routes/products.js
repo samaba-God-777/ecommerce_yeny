@@ -14,7 +14,6 @@ import asyncHandler from '../middleware/asyncHandler.js'
 
 const router = Router()
 
-// Multer config for image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = 'uploads/products'
@@ -38,7 +37,7 @@ const upload = multer({
 })
 
 router.get('/', asyncHandler(async (req, res) => {
-  const products = getAllProducts(req.query)
+  const products = await getAllProducts(req.query)
   res.json(products)
 }))
 
@@ -47,17 +46,18 @@ router.get('/search', asyncHandler(async (req, res) => {
   if (!q || q.trim().length < 1) {
     return res.json([])
   }
-  const results = searchProducts({ q: q.trim(), categoryId, minPrice, maxPrice, sortBy })
+  const results = await searchProducts({ q: q.trim(), categoryId, minPrice, maxPrice, sortBy })
   res.json(results)
 }))
 
 router.get('/low-stock', authenticate, requireAdmin, asyncHandler(async (req, res) => {
   const threshold = parseInt(req.query.threshold) || 5
-  res.json(getLowStock(threshold))
+  const products = await getLowStock(threshold)
+  res.json(products)
 }))
 
 router.get('/:id', asyncHandler(async (req, res) => {
-  const product = getProductById(req.params.id)
+  const product = await getProductById(req.params.id)
   if (!product) return res.status(404).json({ error: 'Producto no encontrado' })
   res.json(product)
 }))
@@ -65,32 +65,32 @@ router.get('/:id', asyncHandler(async (req, res) => {
 router.post('/', authenticate, requireAdmin, upload.single('image'), asyncHandler(async (req, res) => {
   const data = req.body
   if (req.file) data.image = `/uploads/products/${req.file.filename}`
-  const product = createProduct(data)
+  const product = await createProduct(data)
   res.status(201).json(product)
 }))
 
 router.put('/:id', authenticate, requireAdmin, upload.single('image'), asyncHandler(async (req, res) => {
   const data = req.body
   if (req.file) data.image = `/uploads/products/${req.file.filename}`
-  const product = updateProduct(req.params.id, data)
+  const product = await updateProduct(req.params.id, data)
   if (!product) return res.status(404).json({ error: 'Producto no encontrado' })
   res.json(product)
 }))
 
 router.patch('/:id', authenticate, requireAdmin, asyncHandler(async (req, res) => {
-  const product = updateProductFlags(req.params.id, req.body)
+  const product = await updateProductFlags(req.params.id, req.body)
   if (!product) return res.status(404).json({ error: 'Producto no encontrado' })
   res.json(product)
 }))
 
 router.delete('/:id', authenticate, requireAdmin, asyncHandler(async (req, res) => {
-  const product = getProductById(req.params.id)
+  const product = await getProductById(req.params.id)
   if (!product) return res.status(404).json({ error: 'Producto no encontrado' })
   if (product.image && product.image !== 'product-placeholder.webp' && !product.image.startsWith('/')) {
     const imgPath = path.join(process.cwd(), product.image)
     if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath)
   }
-  deleteProduct(req.params.id)
+  await deleteProduct(req.params.id)
   res.json({ success: true, deleted: product })
 }))
 

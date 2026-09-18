@@ -12,14 +12,14 @@ function generateToken(user) {
   )
 }
 
-export function registerUser(username, email, password) {
-  const existingUsername = getUserByUsername(username)
+export async function registerUser(username, email, password) {
+  const existingUsername = await getUserByUsername(username)
   if (existingUsername) return { success: false, error: 'El usuario ya existe' }
 
-  const existingEmail = getUserByEmail(email)
+  const existingEmail = await getUserByEmail(email)
   if (existingEmail) return { success: false, error: 'El correo ya está registrado' }
 
-  const user = createUser({ id: uuidv4(), username, email, password })
+  const user = await createUser({ id: uuidv4(), username, email, password })
   const token = generateToken(user)
 
   return {
@@ -29,9 +29,9 @@ export function registerUser(username, email, password) {
   }
 }
 
-export function loginUser(identifier, password) {
+export async function loginUser(identifier, password) {
   const isEmail = identifier.includes('@')
-  const user = isEmail ? getUserByEmail(identifier) : getUserByUsername(identifier)
+  const user = isEmail ? await getUserByEmail(identifier) : await getUserByUsername(identifier)
   if (!user) return { success: false, error: 'Usuario o contraseña incorrectos' }
 
   const valid = verifyPassword(user, password)

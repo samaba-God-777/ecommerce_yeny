@@ -4,7 +4,6 @@ import { authenticate, requireAdmin } from '../middleware/auth.js'
 import asyncHandler from '../middleware/asyncHandler.js'
 import { v4 as uuidv4 } from 'uuid'
 
-// Hardcoded image map for frontend category images
 const categoryImages = {
   women: ['women-activewear-navy-set.webp', 'women-activewear-teal-set.webp', 'women-formalwear-set.webp', 'women-tulle-top-set.webp', 'women-crop-jersey-argentina.webp', 'women-crop-jersey-portugal.webp', 'women-crop-jersey-brazil.webp', 'women-crop-jersey-portugal-black.webp'],
   men: ['men-jerseys-collection-1.webp', 'men-jerseys-collection-2.webp', 'men-jerseys-collection-3.webp', 'men-jerseys-collection-4.webp', 'men-jersey-usa.webp', 'men-jersey-jamaica.webp', 'men-jersey-usa-2.webp', 'men-jersey-spain.webp', 'men-jersey-norway.webp', 'men-jersey-england.webp', 'men-jersey-brazil.webp', 'men-jersey-germany.webp', 'men-pants-chino.webp'],
@@ -16,7 +15,8 @@ const categoryImages = {
 const router = Router()
 
 router.get('/', asyncHandler(async (req, res) => {
-  res.json(getAllCategories())
+  const categories = await getAllCategories()
+  res.json(categories)
 }))
 
 router.get('/:slug/images', asyncHandler(async (req, res) => {
@@ -27,7 +27,7 @@ router.get('/:slug/images', asyncHandler(async (req, res) => {
 
 router.post('/', authenticate, requireAdmin, asyncHandler(async (req, res) => {
   const { name, slug, image } = req.body
-  const cat = createCategory({
+  const cat = await createCategory({
     id: uuidv4(),
     name,
     slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
@@ -37,9 +37,9 @@ router.post('/', authenticate, requireAdmin, asyncHandler(async (req, res) => {
 }))
 
 router.delete('/:id', authenticate, requireAdmin, asyncHandler(async (req, res) => {
-  const cat = getCategoryById(req.params.id)
+  const cat = await getCategoryById(req.params.id)
   if (!cat) return res.status(404).json({ error: 'Categoría no encontrada' })
-  deleteCategory(req.params.id)
+  await deleteCategory(req.params.id)
   res.json(cat)
 }))
 

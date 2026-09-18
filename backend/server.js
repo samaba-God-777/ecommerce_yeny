@@ -5,9 +5,10 @@ import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 import http from 'http'
 import { initializeSignalingServer, getIO } from './modules/signalingServer.js'
-import { initDatabase, getDb } from './src/database/connection.js'
+import { connectToMongoDB, getDb } from './src/database/connection.js'
 import { apiLimiter, authLimiter } from './src/middleware/rateLimiter.js'
 import { errorHandler, notFoundHandler } from './src/middleware/errorHandler.js'
+import asyncHandler from './src/middleware/asyncHandler.js'
 import { setIO } from './src/services/socketService.js'
 import logger from './src/utils/logger.js'
 
@@ -27,7 +28,7 @@ const server = http.createServer(app)
 const PORT = 5000
 
 // Initialize database
-initDatabase()
+connectToMongoDB().catch(console.error)
 
 // Initialize Socket.io
 const io = initializeSignalingServer(server)
@@ -58,10 +59,10 @@ app.use('/api/reports', reportRoutes)
 app.use('/api/payments', paymentRoutes)
 
 // Sitemap
-app.get('/sitemap.xml', (req, res) => {
+app.get('/sitemap.xml', asyncHandler(async (req, res) => {
   const db = getDb()
-  const products = db.prepare("SELECT id, name FROM products ORDER BY name").all()
-  const categories = db.prepare("SELECT slug, name FROM categories ORDER BY name").all()
+  const products = await db.collection('products').find().sort({ name: 1 }).toArray()
+  const categories = await db.collection('categories').find().sort({ name: 1 }).toArray()
 
   function slugify(text) {
     return text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -74,13 +75,13 @@ app.get('/sitemap.xml', (req, res) => {
     xml += `  <url><loc>http://localhost:5175/category/${cat.slug}</loc><priority>0.8</priority></url>\n`
   }
   for (const p of products) {
-    xml += `  <url><loc>http://localhost:5175/product/${slugify(p.name)}-${p.id}</loc><priority>0.6</priority></url>\n`
+    xml += `  <url><loc>http://localhost:5175/product/${slugify(p.name)}-${p._id}</loc><priority>0.6</priority></url>\n`
   }
 
   xml += '</urlset>'
   res.header('Content-Type', 'application/xml')
   res.send(xml)
-})
+}))
 
 // Error handling
 app.use(notFoundHandler)
@@ -88,7 +89,7 @@ app.use(errorHandler)
 
 server.listen(PORT, () => {
   console.log(`\n✓ Yenyleths Backend corriendo en http://localhost:${PORT}`)
-  console.log(`✓ SQLite + JWT Auth + WebRTC Signaling activo`)
+  console.log(`✓ MongoDB Atlas + JWT Auth + WebRTC Signaling activo`)
   console.log(`✓ Endpoints:`)
   console.log(`  POST /api/auth/register | /login | /me`)
   console.log(`  GET|POST|PUT|PATCH|DELETE /api/products`)

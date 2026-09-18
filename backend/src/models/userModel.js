@@ -2,47 +2,73 @@ import { getDb } from '../database/connection.js'
 import { v4 as uuidv4 } from 'uuid'
 import bcrypt from 'bcryptjs'
 
-export function createUser({ id, username, email, password, isAdmin = 0 }) {
+function formatUser(doc) {
+  if (!doc) return null
+  const { _id, passwordHash, ...rest } = doc
+  return { id: _id.toString(), ...rest, passwordHash }
+}
+
+function formatUserPublic(doc) {
+  if (!doc) return null
+  const { _id, passwordHash, ...rest } = doc
+  return { id: _id.toString(), ...rest }
+}
+
+export async function createUser({ id, username, email, password, isAdmin = false }) {
+  const db = getDb()
   const passwordHash = bcrypt.hashSync(password, 10)
-  getDb().prepare(
-    'INSERT INTO users (id, username, email, passwordHash, isAdmin) VALUES (?, ?, ?, ?, ?)'
-  ).run(id || uuidv4(), username, email, passwordHash, isAdmin ? 1 : 0)
-  return getUserByUsername(username)
-}
-
-export function getUserByUsername(username) {
-  return getDb().prepare('SELECT * FROM users WHERE username = ?').get(username)
-}
-
-export function getUserByEmail(email) {
-  return getDb().prepare('SELECT * FROM users WHERE email = ?').get(email)
-}
-
-export function getUserById(id) {
-  return getDb().prepare('SELECT id, username, email, isAdmin, phone, address, createdAt FROM users WHERE id = ?').get(id)
-}
-
-export function getAllUsers() {
-  return getDb().prepare('SELECT id, username, email, isAdmin, phone, address, createdAt FROM users ORDER BY createdAt DESC').all()
-}
-
-export function updatePassword(id, newPassword) {
-  const hash = bcrypt.hashSync(newPassword, 10)
-  getDb().prepare('UPDATE users SET passwordHash = ? WHERE id = ?').run(hash, id)
-}
-
-export function updateProfile(id, data) {
-  const sets = []
-  const params = []
-  for (const key of ['username', 'email', 'phone', 'address']) {
-    if (data[key] !== undefined) {
-      sets.push(`${key}=?`)
-      params.push(data[key])
-    }
+  const user = {
+    _id: id || uuidv4(),
+    username,
+    email,
+    passwordHash,
+    isAdmin: !!isAdmin,
+    phone: '',
+    address: '',
+    createdAt: new Date()
   }
-  if (sets.length > 0) {
-    params.push(id)
-    getDb().prepare(`UPDATE users SET ${sets.join(',')} WHERE id=?`).run(...params)
+  await db.collection('users').insertOne(user)
+  return formatUser(user)
+}
+
+export async function getUserByUsername(username) {
+  const db = getDb()
+  const user = await db.collection('users').findOne({ username })
+  return formatUser(user)
+}
+
+export async function getUserByEmail(email) {
+  const db = getDb()
+  const user = await db.collection('users').findOne({ email })
+  return formatUser(user)
+}
+
+export async function getUserById(id) {
+  const db = getDb()
+  const user = await db.collection('users').findOne({ _id: id })
+  return formatUserPublic(user)
+}
+
+export async function getAllUsers() {
+  const db = getDb()
+  const users = await db.collection('users').find().sort({ createdAt: -1 }).toArray()
+  return users.map(formatUserPublic)
+}
+
+export async function updatePassword(id, newPassword) {
+  const db = getDb()
+  const hash = bcrypt.hashSync(newPassword, 10)
+  await db.collection('users').updateOne({ _id: id }, { $set: { passwordHash: hash } })
+}
+
+export async function updateProfile(id, data) {
+  const db = getDb()
+  const updates = {}
+  for (const key of ['username', 'email', 'phone', 'address']) {
+    if (data[key] !== undefined) updates[key] = data[key]
+  }
+  if (Object.keys(updates).length > 0) {
+    await db.collection('users').updateOne({ _id: id }, { $set: updates })
   }
   return getUserById(id)
 }

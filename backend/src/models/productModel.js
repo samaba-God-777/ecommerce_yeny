@@ -1,92 +1,85 @@
 import { getDb } from '../database/connection.js'
 import { v4 as uuidv4 } from 'uuid'
 
-function rowToProduct(row) {
-  if (!row) return null
-  return {
-    ...row,
-    isFlashSale: !!row.isFlashSale,
-    isBestSeller: !!row.isBestSeller,
-    isTrending: !!row.isTrending,
-    oldPrice: row.oldPrice || null,
-    flashSalePrice: row.flashSalePrice || null,
-    flashSaleEnd: row.flashSaleEnd || null
-  }
+function formatProduct(doc) {
+  if (!doc) return null
+  const { _id, ...rest } = doc
+  return { id: _id.toString(), ...rest }
 }
 
-export function getAllProducts(filters = {}) {
-  let sql = 'SELECT * FROM products WHERE 1=1'
-  const params = []
+export async function getAllProducts(filters = {}) {
+  const db = getDb()
+  const query = {}
 
-  if (filters.categoryId) {
-    sql += ' AND categoryId = ?'
-    params.push(filters.categoryId)
-  }
-  if (filters.flashSale === 'true') {
-    sql += ' AND isFlashSale = 1'
-  }
-  if (filters.bestSeller === 'true') {
-    sql += ' AND isBestSeller = 1'
-  }
-  if (filters.trending === 'true') {
-    sql += ' AND isTrending = 1'
-  }
+  if (filters.categoryId) query.categoryId = filters.categoryId
+  if (filters.flashSale === 'true') query.isFlashSale = true
+  if (filters.bestSeller === 'true') query.isBestSeller = true
+  if (filters.trending === 'true') query.isTrending = true
 
-  sql += ' ORDER BY createdAt DESC'
-
-  return getDb().prepare(sql).all(...params).map(rowToProduct)
+  const products = await db.collection('products').find(query).sort({ createdAt: -1 }).toArray()
+  return products.map(formatProduct)
 }
 
-export function getProductById(id) {
-  return rowToProduct(getDb().prepare('SELECT * FROM products WHERE id = ?').get(id))
+export async function getProductById(id) {
+  const db = getDb()
+  const product = await db.collection('products').findOne({ _id: id })
+  return formatProduct(product)
 }
 
-export function searchProducts({ q, categoryId, minPrice, maxPrice, sortBy }) {
-  let sql = 'SELECT * FROM products WHERE (name LIKE ? OR brand LIKE ? OR description LIKE ?)'
-  const params = [`%${q}%`, `%${q}%`, `%${q}%`]
-
-  if (categoryId) {
-    sql += ' AND categoryId = ?'
-    params.push(categoryId)
-  }
-  if (minPrice) {
-    sql += ' AND price >= ?'
-    params.push(Number(minPrice))
-  }
-  if (maxPrice) {
-    sql += ' AND price <= ?'
-    params.push(Number(maxPrice))
+export async function searchProducts({ q, categoryId, minPrice, maxPrice, sortBy }) {
+  const db = getDb()
+  const query = {
+    $or: [
+      { name: { $regex: q, $options: 'i' } },
+      { brand: { $regex: q, $options: 'i' } },
+      { description: { $regex: q, $options: 'i' } }
+    ]
   }
 
-  // Sorting
+  if (categoryId) query.categoryId = categoryId
+  if (minPrice) query.price = { ...query.price, $gte: Number(minPrice) }
+  if (maxPrice) query.price = { ...query.price, $lte: Number(maxPrice) }
+
+  let sort = { createdAt: -1 }
   switch (sortBy) {
-    case 'price_asc': sql += ' ORDER BY price ASC'; break
-    case 'price_desc': sql += ' ORDER BY price DESC'; break
-    case 'name': sql += ' ORDER BY name ASC'; break
-    case 'rating': sql += ' ORDER BY rating DESC'; break
-    default: sql += ' ORDER BY createdAt DESC'
+    case 'price_asc': sort = { price: 1 }; break
+    case 'price_desc': sort = { price: -1 }; break
+    case 'name': sort = { name: 1 }; break
+    case 'rating': sort = { rating: -1 }; break
   }
 
-  const results = getDb().prepare(sql).all(...params)
-  return results.map(rowToProduct)
+  const results = await db.collection('products').find(query).sort(sort).toArray()
+  return results.map(formatProduct)
 }
 
-export function createProduct(data) {
+export async function createProduct(data) {
+  const db = getDb()
   const id = data.id || uuidv4()
-  getDb().prepare(`
-    INSERT INTO products (id, name, categoryId, brand, price, oldPrice, image, description, stock, rating, isFlashSale, flashSalePrice, flashSaleEnd, isBestSeller, isTrending)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    id, data.name, data.categoryId, data.brand || '', data.price, data.oldPrice || null,
-    data.image || 'product-placeholder.webp', data.description || '', data.stock || 0,
-    data.rating || 4.5, data.isFlashSale ? 1 : 0, data.flashSalePrice || null,
-    data.flashSaleEnd || null, data.isBestSeller ? 1 : 0, data.isTrending ? 1 : 0
-  )
-  return getProductById(id)
+  const product = {
+    _id: id,
+    name: data.name,
+    categoryId: data.categoryId,
+    brand: data.brand || '',
+    price: Number(data.price),
+    oldPrice: data.oldPrice || null,
+    image: data.image || 'product-placeholder.webp',
+    description: data.description || '',
+    stock: Number(data.stock) || 0,
+    rating: Number(data.rating) || 4.5,
+    isFlashSale: !!data.isFlashSale,
+    flashSalePrice: data.flashSalePrice || null,
+    flashSaleEnd: data.flashSaleEnd || null,
+    isBestSeller: !!data.isBestSeller,
+    isTrending: !!data.isTrending,
+    createdAt: new Date()
+  }
+  await db.collection('products').insertOne(product)
+  return formatProduct(product)
 }
 
-export function updateProduct(id, data) {
-  const existing = getProductById(id)
+export async function updateProduct(id, data) {
+  const db = getDb()
+  const existing = await getProductById(id)
   if (!existing) return null
 
   const updates = {
@@ -97,49 +90,40 @@ export function updateProduct(id, data) {
     description: data.description !== undefined ? data.description : existing.description,
     stock: data.stock !== undefined ? Number(data.stock) : existing.stock,
     image: data.image || existing.image,
-    isFlashSale: data.isFlashSale !== undefined ? (data.isFlashSale ? 1 : 0) : (existing.isFlashSale ? 1 : 0),
+    isFlashSale: data.isFlashSale !== undefined ? !!data.isFlashSale : existing.isFlashSale,
     flashSalePrice: data.flashSalePrice !== undefined ? data.flashSalePrice : existing.flashSalePrice,
     flashSaleEnd: data.flashSaleEnd !== undefined ? data.flashSaleEnd : existing.flashSaleEnd,
-    isBestSeller: data.isBestSeller !== undefined ? (data.isBestSeller ? 1 : 0) : (existing.isBestSeller ? 1 : 0),
-    isTrending: data.isTrending !== undefined ? (data.isTrending ? 1 : 0) : (existing.isTrending ? 1 : 0)
+    isBestSeller: data.isBestSeller !== undefined ? !!data.isBestSeller : existing.isBestSeller,
+    isTrending: data.isTrending !== undefined ? !!data.isTrending : existing.isTrending
   }
 
-  getDb().prepare(`
-    UPDATE products SET name=?, categoryId=?, brand=?, price=?, description=?, stock=?, image=?, isFlashSale=?, flashSalePrice=?, flashSaleEnd=?, isBestSeller=?, isTrending=?
-    WHERE id=?
-  `).run(
-    updates.name, updates.categoryId, updates.brand, updates.price, updates.description,
-    updates.stock, updates.image, updates.isFlashSale, updates.flashSalePrice,
-    updates.flashSaleEnd, updates.isBestSeller, updates.isTrending, id
-  )
-
+  await db.collection('products').updateOne({ _id: id }, { $set: updates })
   return getProductById(id)
 }
 
-export function updateProductFlags(id, flags) {
-  const sets = []
-  const params = []
-  for (const [key, value] of Object.entries(flags)) {
-    sets.push(`${key}=?`)
-    params.push(value)
-  }
-  params.push(id)
-  getDb().prepare(`UPDATE products SET ${sets.join(',')} WHERE id=?`).run(...params)
+export async function updateProductFlags(id, flags) {
+  const db = getDb()
+  await db.collection('products').updateOne({ _id: id }, { $set: flags })
   return getProductById(id)
 }
 
-export function deleteProduct(id) {
-  getDb().prepare('DELETE FROM products WHERE id=?').run(id)
+export async function deleteProduct(id) {
+  const db = getDb()
+  await db.collection('products').deleteOne({ _id: id })
 }
 
-export function getLowStock(threshold = 5) {
-  return getDb().prepare('SELECT * FROM products WHERE stock < ? AND stock > 0 ORDER BY stock ASC').all(threshold)
+export async function getLowStock(threshold = 5) {
+  const db = getDb()
+  const products = await db.collection('products').find({ stock: { $gt: 0, $lt: threshold } }).sort({ stock: 1 }).toArray()
+  return products.map(formatProduct)
 }
 
-export function decrementStock(id, qty) {
-  getDb().prepare('UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?').run(qty, id, qty)
+export async function decrementStock(id, qty) {
+  const db = getDb()
+  await db.collection('products').updateOne({ _id: id, stock: { $gte: qty } }, { $inc: { stock: -qty } })
 }
 
-export function restoreStock(id, qty) {
-  getDb().prepare('UPDATE products SET stock = stock + ? WHERE id = ?').run(qty, id)
+export async function restoreStock(id, qty) {
+  const db = getDb()
+  await db.collection('products').updateOne({ _id: id }, { $inc: { stock: qty } })
 }
