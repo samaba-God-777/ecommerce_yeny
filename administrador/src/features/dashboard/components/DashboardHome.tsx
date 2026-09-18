@@ -32,7 +32,7 @@ interface DashboardProps {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' as const } },
 }
 
 const stagger = {
@@ -294,7 +294,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                     borderRadius: '12px',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                   }}
-                  formatter={(value: number) => [formatCurrency(value), '']}
+                  formatter={(value) => [formatCurrency(Number(value)), '']}
                 />
                 <Area type="monotone" dataKey="ventas" stroke="#b23a2f" strokeWidth={2.5} fillOpacity={1} fill="url(#colorVentas)" />
                 <Area type="monotone" dataKey="pedidos" stroke="#8c2b22" strokeWidth={2.5} fillOpacity={1} fill="url(#colorPedidos)" />
@@ -339,7 +339,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                       border: '1px solid var(--color-border)',
                       borderRadius: '12px',
                     }}
-                    formatter={(value: number) => [`${value}%`, '']}
+                    formatter={(value) => [`${value}%`, '']}
                   />
                 </PieChart>
               </ResponsiveContainer>
