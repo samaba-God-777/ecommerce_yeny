@@ -1,0 +1,13 @@
+{
+  "projects": {
+    "default": "ecommerce-yenny"
+  },
+  "targets": {
+    "ecommerce-yenny": {
+      "hosting": {
+        "tienda": ["ecommerce-yenny"],
+        "panel": ["ecommerce-yenny-admin"]
+      }
+    }
+  }
+}
