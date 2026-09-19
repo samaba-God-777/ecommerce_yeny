@@ -8,12 +8,46 @@
  * tipicos. Nunca imprime la cadena ni la contrasena.
  */
 import { MongoClient } from 'mongodb'
+import readline from 'node:readline'
 
-const { MONGODB_URI } = process.env
+/**
+ * Pide un dato por teclado. Con oculto=true no se ve lo que se escribe, asi
+ * la contrasena no queda en la pantalla ni en el historial del shell.
+ */
+function preguntar(texto, oculto = false) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true })
+  if (oculto) {
+    rl._writeToOutput = (s) => rl.output.write(s.includes(texto) ? s : '')
+  }
+  return new Promise(resolve => rl.question(texto, (r) => { rl.close(); if (oculto) console.log(); resolve(r.trim()) }))
+}
 
+let MONGODB_URI = process.env.MONGODB_URI
+
+// Sin MONGODB_URI se arma a mano: util para probar una contrasena recien
+// rotada sin dejarla escrita en ningun archivo.
 if (!MONGODB_URI) {
-  console.error('✗ Falta MONGODB_URI')
-  process.exit(1)
+  if (!process.stdin.isTTY) {
+    console.error('✗ Falta MONGODB_URI')
+    process.exit(1)
+  }
+  console.log('Sin MONGODB_URI: se arma la cadena aqui mismo.\n')
+  const usuario = await preguntar('Usuario de Atlas [admin]: ') || 'admin'
+  const clave = await preguntar('Contrasena (no se muestra): ', true)
+  const host = await preguntar('Host del cluster [cluster.fk7sg07.mongodb.net]: ') || 'cluster.fk7sg07.mongodb.net'
+
+  if (!clave) {
+    console.error('✗ No escribiste contrasena')
+    process.exit(1)
+  }
+
+  const claveCodificada = encodeURIComponent(clave)
+  if (claveCodificada !== clave) {
+    console.log('\n⚠ Tu contrasena lleva caracteres que hay que codificar en la URL.')
+    console.log('  En Render pega la cadena con la contrasena asi:', claveCodificada)
+  }
+  MONGODB_URI = `mongodb+srv://${encodeURIComponent(usuario)}:${claveCodificada}@${host}/?appName=Cluster`
+  console.log()
 }
 
 // Avisa de los caracteres que rompen la cadena si no van codificados
