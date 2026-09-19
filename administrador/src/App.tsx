@@ -88,7 +88,7 @@ function LoginForm({ onLogin }: { onLogin: (email: string, password: string) => 
       <button
         type="submit"
         disabled={entrando}
-        className="w-full px-6 py-3 bg-ink text-primary-foreground rounded-lg font-semibold hover:bg-market transition disabled:opacity-60"
+        className="w-full px-6 py-3 bg-market text-primary-foreground rounded-lg font-semibold hover:bg-market-deep transition disabled:opacity-60"
       >
         {entrando ? 'Iniciando sesión...' : 'Iniciar Sesión'}
       </button>

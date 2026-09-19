@@ -31,7 +31,7 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 }
 
-const PIE_COLORS = ['#f472b6', '#c8a75a', '#a78bfa', '#34d399', '#60a5fa', '#f97316', '#06b6d4', '#ef4444', '#84cc16', '#a1a1aa']
+const PIE_COLORS = ['#ad4a71', '#d4759b', '#e8a0bf', '#96365d', '#c25b84', '#f2cddd', '#06b6d4', '#ef4444', '#84cc16', '#a1a1aa']
 
 interface SummaryData {
   kpis: {
@@ -235,7 +235,7 @@ export default function ReportsPage() {
                   }}
                   formatter={(value) => [formatCurrency(Number(value ?? 0)), '']}
                 />
-                <Bar dataKey="ventas" fill="#ec4899" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="ventas" fill="#ad4a71" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { logo } from '../../data/productImages'
 import { useAuth } from '../../context/AuthContext'
+import { ADMIN_URL } from '../../lib/urls'
 
 const sidebarLinks = [
   { to: '/dashboard', label: 'Inicio', icon: Home },
@@ -217,6 +218,20 @@ export default function DashboardLayout() {
                 3
               </span>
             </button>
+
+            {/* Vuelta al panel de administracion: solo la ve quien lo es.
+                Sin esto, salir a la tienda dejaba al administrador dando
+                vueltas por la zona de clientes. */}
+            {user?.isAdmin && (
+              <a
+                href={ADMIN_URL}
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pink-600 text-white hover:bg-pink-700 transition font-medium text-sm"
+                aria-label="Volver al panel de administración"
+              >
+                <Settings size={18} />
+                <span className="hidden md:inline">Volver al panel</span>
+              </a>
+            )}
 
             <button
               onClick={() => window.location.href = '/'}

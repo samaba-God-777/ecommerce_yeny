@@ -312,6 +312,14 @@ export function Navbar() {
                       <p className="font-mono text-xs text-ink-soft">{user.email || 'usuario@yenyleths.com'}</p>
                     </div>
                     <div className="space-y-1 p-2">
+                      {user.isAdmin && (
+                        <a
+                          href={ADMIN_URL}
+                          className="flex items-center gap-2 rounded-md bg-market/10 px-3 py-2 text-sm font-bold text-market transition hover:bg-market/20"
+                        >
+                          <Settings size={16} /> Volver al panel
+                        </a>
+                      )}
                       <Link to="/account" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-ink transition-colors hover:bg-paper">
                         <User size={16} /> Mi Cuenta
                       </Link>
@@ -370,13 +378,13 @@ export function Navbar() {
                   </Link>
                 </li>
               ))}
-              <li className="border-t border-line pt-4">
+              <li className={`border-t border-line pt-4 ${user?.isAdmin ? '' : 'hidden'}`}>
                 <a
                   href={ADMIN_URL}
                   className="flex items-center gap-2 font-mono text-lg font-bold text-market transition hover:text-market-deep"
                 >
                   <Settings size={20} />
-                  Panel Admin
+                  Volver al panel
                 </a>
               </li>
               {authLoading ? null : user ? (

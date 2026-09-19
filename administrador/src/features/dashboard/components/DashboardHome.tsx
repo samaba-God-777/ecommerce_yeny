@@ -39,7 +39,7 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.06 } },
 }
 
-const PIE_COLORS = ['#b23a2f', '#8c2b22', '#d2513f', '#c47362', '#b8b0a0', '#a8843f', '#7a6a52', '#96602e', '#b6a47f', '#a1a1aa']
+const PIE_COLORS = ['#ad4a71', '#96365d', '#c25b84', '#d4759b', '#b8b0a0', '#a8843f', '#7a6a52', '#96602e', '#b6a47f', '#a1a1aa']
 
 interface ReportsData {
   kpis: {
@@ -276,12 +276,12 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
               <AreaChart data={salesData}>
                 <defs>
                   <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#b23a2f" stopOpacity={0.28} />
-                    <stop offset="95%" stopColor="#b23a2f" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#ad4a71" stopOpacity={0.28} />
+                    <stop offset="95%" stopColor="#ad4a71" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorPedidos" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8c2b22" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#8c2b22" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#96365d" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#96365d" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.5} />
@@ -296,8 +296,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                   }}
                   formatter={(value) => [formatCurrency(Number(value)), '']}
                 />
-                <Area type="monotone" dataKey="ventas" stroke="#b23a2f" strokeWidth={2.5} fillOpacity={1} fill="url(#colorVentas)" />
-                <Area type="monotone" dataKey="pedidos" stroke="#8c2b22" strokeWidth={2.5} fillOpacity={1} fill="url(#colorPedidos)" />
+                <Area type="monotone" dataKey="ventas" stroke="#ad4a71" strokeWidth={2.5} fillOpacity={1} fill="url(#colorVentas)" />
+                <Area type="monotone" dataKey="pedidos" stroke="#96365d" strokeWidth={2.5} fillOpacity={1} fill="url(#colorPedidos)" />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
