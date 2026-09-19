@@ -35,6 +35,68 @@ interface Product {
 }
 
 
+
+function LoginForm({ onLogin }: { onLogin: (email: string, password: string) => Promise<void> }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [entrando, setEntrando] = useState(false)
+
+  const enviar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setEntrando(true)
+    try {
+      await onLogin(email, password)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo iniciar sesión')
+    } finally {
+      setEntrando(false)
+    }
+  }
+
+  const campo = 'w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring'
+
+  return (
+    <form onSubmit={enviar} className="bg-card border border-line rounded-xl shadow-lg p-6 text-left space-y-4">
+      <input
+        type="email"
+        placeholder="Correo electrónico"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+        autoComplete="email"
+        autoFocus
+        className={campo}
+      />
+      <input
+        type="password"
+        placeholder="Contraseña"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        autoComplete="current-password"
+        className={campo}
+      />
+
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center">
+          {error}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={entrando}
+        className="w-full px-6 py-3 bg-ink text-primary-foreground rounded-lg font-semibold hover:bg-market transition disabled:opacity-60"
+      >
+        {entrando ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+      </button>
+      <a href={`${STORE_URL}/`} className="block text-center text-sm text-market hover:text-market-deep font-medium">Ir a la Tienda</a>
+    </form>
+  )
+}
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [username, setUsername] = useState('')
@@ -212,16 +274,7 @@ export default function App() {
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-ink mb-1">Yenyleths</h1>
           <p className="text-market font-mono text-xs tracking-[0.2em] uppercase mb-8">Panel de Administración</p>
-          <div className="bg-card border border-line rounded-xl shadow-lg p-6 text-left space-y-4">
-            <input id="login-user" type="email" placeholder="Correo electrónico" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" autoComplete="email" />
-            <input id="login-pass" type="password" placeholder="Contraseña" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" autoComplete="current-password" />
-            <button onClick={async () => {
-              const u = (document.getElementById('login-user') as HTMLInputElement).value
-              const p = (document.getElementById('login-pass') as HTMLInputElement).value
-              try { await handleLogin(u, p) } catch (e) { alert(e instanceof Error ? e.message : 'No se pudo iniciar sesión') }
-            }} className="w-full px-6 py-3 bg-ink text-primary-foreground rounded-lg font-semibold hover:bg-market transition">Iniciar Sesión</button>
-            <a href={`${STORE_URL}/`} className="block text-center text-sm text-market hover:text-market-deep font-medium">Ir a la Tienda</a>
-          </div>
+          <LoginForm onLogin={handleLogin} />
         </div>
       </div>
     )
