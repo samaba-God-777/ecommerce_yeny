@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getDb, admin } from '../database/firestore.js'
+import { getDb, FieldValue } from '../database/firestore.js'
 import asyncHandler from '../middleware/asyncHandler.js'
 import { getOnlineUsers } from '../../modules/signalingServer.js'
 import { v4 as uuidv4 } from 'uuid'
@@ -86,7 +86,7 @@ router.post('/conversations/:id/messages', asyncHandler(async (req, res) => {
     lastMessage: text,
     lastMessageTime: new Date(),
     // Solo los mensajes del cliente suman al contador de no leidos del panel
-    ...(sender === 'customer' && { unread: admin.firestore.FieldValue.increment(1) })
+    ...(sender === 'customer' && { unread: FieldValue.increment(1) })
   })
 
   res.status(201).json({ id: msgId, ...message })

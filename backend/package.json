@@ -31,5 +31,8 @@
     "uuid": "^14.0.1",
     "winston": "^3.19.0",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "firebase-tools": "^15.30.2"
   }
 }

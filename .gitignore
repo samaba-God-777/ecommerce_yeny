@@ -3,3 +3,9 @@ node_modules/
 !frontend/.env
 !administrador/.env
 *.log
+
+# Emuladores de Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

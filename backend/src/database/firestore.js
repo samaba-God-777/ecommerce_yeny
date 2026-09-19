@@ -1,8 +1,13 @@
-import admin from 'firebase-admin'
+import { initializeApp, getApps, getApp, cert, deleteApp } from 'firebase-admin/app'
+import { getFirestore, FieldValue } from 'firebase-admin/firestore'
+import { getAuth as getFirebaseAuth } from 'firebase-admin/auth'
 import logger from '../utils/logger.js'
 
 /**
  * Conexion con Firebase (Firestore + Auth).
+ *
+ * Se usa la API modular ('firebase-admin/app', '.../firestore'): desde la v13
+ * el objeto unico `admin` ya no expone `apps` ni `firestore.FieldValue`.
  *
  * Credenciales, por orden de preferencia:
  *
@@ -24,7 +29,7 @@ function credencialesDelEntorno() {
   if (FIREBASE_SERVICE_ACCOUNT) {
     const cuenta = JSON.parse(FIREBASE_SERVICE_ACCOUNT)
     if (cuenta.private_key) cuenta.private_key = cuenta.private_key.replace(/\\n/g, '\n')
-    return { credential: admin.credential.cert(cuenta), projectId: cuenta.project_id }
+    return { credential: cert(cuenta), projectId: cuenta.project_id }
   }
 
   // Con emulador o con GOOGLE_APPLICATION_CREDENTIALS basta el id del proyecto
@@ -39,15 +44,15 @@ export async function connectToFirestore() {
     throw new Error('Falta FIREBASE_SERVICE_ACCOUNT o FIREBASE_PROJECT_ID')
   }
 
-  app = admin.apps.length
-    ? admin.app()
-    : admin.initializeApp({ ...(credential && { credential }), projectId })
+  app = getApps().length
+    ? getApp()
+    : initializeApp({ ...(credential && { credential }), projectId })
 
-  db = admin.firestore()
+  db = getFirestore(app)
   db.settings({ ignoreUndefinedProperties: true })
 
   // Una lectura de verdad: initializeApp no falla aunque las credenciales
-  // esten mal, y sin esto el error aparecería recien en la primera peticion.
+  // esten mal, y sin esto el error apareceria recien en la primera peticion.
   await db.collection('_ping').limit(1).get()
 
   const donde = process.env.FIRESTORE_EMULATOR_HOST
@@ -64,16 +69,16 @@ export function getDb() {
 
 export function getAuth() {
   if (!app) throw new Error('Firebase no inicializado. Llama a connectToFirestore() primero.')
-  return admin.auth()
+  return getFirebaseAuth(app)
 }
 
 export async function closeDb() {
   if (app) {
-    await app.delete()
+    await deleteApp(app)
     app = null
     db = null
   }
 }
 
-export { admin }
-export default { connectToFirestore, getDb, getAuth, closeDb }
+export { FieldValue }
+export default { connectToFirestore, getDb, getAuth, closeDb, FieldValue }

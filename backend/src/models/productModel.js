@@ -1,4 +1,4 @@
-import { getDb, admin } from '../database/firestore.js'
+import { getDb, FieldValue } from '../database/firestore.js'
 import { v4 as uuidv4 } from 'uuid'
 
 /**
@@ -148,13 +148,13 @@ export async function decrementStock(id, qty) {
   return getDb().runTransaction(async (tx) => {
     const doc = await tx.get(ref)
     if (!doc.exists || (doc.data().stock || 0) < qty) return false
-    tx.update(ref, { stock: admin.firestore.FieldValue.increment(-qty) })
+    tx.update(ref, { stock: FieldValue.increment(-qty) })
     return true
   })
 }
 
 export async function restoreStock(id, qty) {
   await coleccion().doc(String(id)).update({
-    stock: admin.firestore.FieldValue.increment(qty)
+    stock: FieldValue.increment(qty)
   })
 }

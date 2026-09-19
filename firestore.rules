@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// Reglas de Firestore.
+//
+// La tienda y el panel NO leen Firestore directamente: todo pasa por el API,
+// que usa la cuenta de servicio (el SDK de administrador se salta estas reglas).
+// Por eso el acceso desde el navegador se deniega entero: si manana alguien
+// conecta el SDK cliente a Firestore, tendra que decidir aqui que expone.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

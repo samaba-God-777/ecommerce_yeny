@@ -1,4 +1,4 @@
-import { getDb, admin } from '../database/firestore.js'
+import { getDb, FieldValue } from '../database/firestore.js'
 import { v4 as uuidv4 } from 'uuid'
 
 const coleccion = () => getDb().collection('coupons')
@@ -56,7 +56,7 @@ export async function incrementCouponUses(code) {
   const cupon = await getCouponByCode(code)
   if (!cupon) return
   await coleccion().doc(cupon.id).update({
-    uses: admin.firestore.FieldValue.increment(1)
+    uses: FieldValue.increment(1)
   })
 }
 
