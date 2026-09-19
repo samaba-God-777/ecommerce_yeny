@@ -1,60 +1,34 @@
 import { Router } from 'express'
-import { registerUser, loginUser, getUserById, requestPasswordReset, resetPassword } from '../services/authService.js'
-import { updateProfile, updatePassword, getAllUsers } from '../models/userModel.js'
+import { ensureProfile, getUserById, updateProfile, getAllUsers, setAdmin } from '../services/authService.js'
 import { authenticate, requireAdmin } from '../middleware/auth.js'
-import validate from '../middleware/validate.js'
-import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from '../schemas/index.js'
 import asyncHandler from '../middleware/asyncHandler.js'
 
 const router = Router()
 
-// A donde apunta el enlace del correo: la tienda, no el API. En produccion se
-// fija con APP_URL; si no esta, se usa el origen que mando la peticion.
-const appUrl = (req) => process.env.APP_URL || req.get('origin') || 'http://localhost:5175'
+/**
+ * Rutas de cuenta.
+ *
+ * Registrarse, iniciar sesion y recuperar la contrasena ocurren en el cliente
+ * contra Firebase Auth. Aqui solo queda el perfil, que vive en Firestore.
+ */
 
-router.post('/register', validate(registerSchema), asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body
-  const result = await registerUser(username, email, password)
-  if (!result.success) return res.status(400).json(result)
-  res.status(201).json(result)
-}))
-
-router.post('/login', validate(loginSchema), asyncHandler(async (req, res) => {
-  const { username, password } = req.body
-  const result = await loginUser(username, password)
-  if (!result.success) return res.status(401).json(result)
-
-  res.cookie('adminToken', result.token, {
-    httpOnly: false,
-    secure: false,
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000
+// Crea el perfil tras registrarse en el cliente. Es idempotente: si ya existe,
+// devuelve el que hay, asi el front puede llamarla sin miedo en cada arranque.
+router.post('/ensure-profile', authenticate, asyncHandler(async (req, res) => {
+  const result = await ensureProfile(req.user.id, {
+    username: req.body.username,
+    email: req.body.email || req.user.email
   })
-
-  res.json(result)
-}))
-
-// ── Recuperar contrasena ──
-// Siempre responde lo mismo, exista o no la cuenta, para no revelar quien
-// esta registrado. El limitador de /api/auth ya frena los intentos seguidos.
-router.post('/forgot-password', validate(forgotPasswordSchema), asyncHandler(async (req, res) => {
-  await requestPasswordReset(req.body.email, appUrl(req))
-  res.json({
-    success: true,
-    message: 'Si el correo está registrado, te enviamos un enlace para recuperar tu contraseña.'
-  })
-}))
-
-router.post('/reset-password', validate(resetPasswordSchema), asyncHandler(async (req, res) => {
-  const { token, password } = req.body
-  const result = await resetPassword(token, password)
   if (!result.success) return res.status(400).json(result)
-  res.json(result)
+  res.status(result.creado ? 201 : 200).json(result)
 }))
 
 router.get('/me', authenticate, asyncHandler(async (req, res) => {
   const user = await getUserById(req.user.id)
-  if (!user) return res.status(404).json({ success: false, error: 'Usuario no encontrado' })
+  if (!user) {
+    // Cuenta valida en Auth sin perfil: el front llama a /ensure-profile
+    return res.status(404).json({ success: false, error: 'Perfil no encontrado', needsProfile: true })
+  }
   res.json({ success: true, user })
 }))
 
@@ -63,25 +37,23 @@ router.put('/me', authenticate, asyncHandler(async (req, res) => {
   res.json({ success: true, user })
 }))
 
-router.put('/me/password', authenticate, asyncHandler(async (req, res) => {
-  const { currentPassword, newPassword } = req.body
-  const { verifyPassword } = await import('../models/userModel.js')
-  const user = await getUserById(req.user.id)
-  if (!verifyPassword(user, currentPassword)) {
-    return res.status(400).json({ success: false, error: 'Contraseña actual incorrecta' })
-  }
-  await updatePassword(req.user.id, newPassword)
-  res.json({ success: true, message: 'Contraseña actualizada' })
-}))
-
-router.post('/logout', (req, res) => {
-  res.clearCookie('adminToken')
-  res.json({ success: true, message: 'Sesión cerrada' })
-})
-
 router.get('/users', authenticate, requireAdmin, asyncHandler(async (req, res) => {
   const users = await getAllUsers()
   res.json({ success: true, users })
 }))
+
+// Dar o quitar permisos de administrador. El cambio viaja en el token, asi que
+// al afectado le aplica cuando su sesion renueva el token (hasta una hora).
+router.put('/users/:id/admin', authenticate, requireAdmin, asyncHandler(async (req, res) => {
+  await setAdmin(req.params.id, !!req.body.isAdmin)
+  res.json({ success: true, message: 'Permisos actualizados' })
+}))
+
+// La sesion la cierra el cliente con Firebase; aqui solo se limpia la cookie
+// que usa el panel para sobrevivir a la recarga.
+router.post('/logout', (req, res) => {
+  res.clearCookie('adminToken')
+  res.json({ success: true, message: 'Sesión cerrada' })
+})
 
 export default router

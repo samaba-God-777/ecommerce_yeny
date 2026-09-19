@@ -1,48 +1,62 @@
-import jwt from 'jsonwebtoken'
+import { getAuth } from '../database/firestore.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'yenyleths-dev-secret-key-2026'
+/**
+ * Autenticacion con Firebase Auth.
+ *
+ * El cliente inicia sesion contra Firebase y manda el ID token en la cabecera
+ * Authorization. Aqui solo se verifica: el backend nunca ve contrasenas.
+ *
+ * "isAdmin" viaja dentro del token como custom claim, asi que no hace falta
+ * leer Firestore para decidir permisos.
+ */
 
-function authenticate(req, res, next) {
-  let token = null
+function tokenDeLaPeticion(req) {
+  const cabecera = req.headers.authorization
+  if (cabecera && cabecera.startsWith('Bearer ')) return cabecera.substring(7)
+  // El panel guarda el token en cookie para sobrevivir a la recarga
+  if (req.cookies?.adminToken) return req.cookies.adminToken
+  return null
+}
 
-  // Check Authorization header
-  const authHeader = req.headers.authorization
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.substring(7)
+async function usuarioDelToken(token) {
+  const decoded = await getAuth().verifyIdToken(token)
+  return {
+    id: decoded.uid,
+    uid: decoded.uid,
+    email: decoded.email,
+    username: decoded.name || decoded.email,
+    isAdmin: !!decoded.isAdmin
   }
+}
 
-  // Check cookie (for admin panel cross-origin)
-  if (!token && req.cookies && req.cookies.adminToken) {
-    token = req.cookies.adminToken
-  }
-
+async function authenticate(req, res, next) {
+  const token = tokenDeLaPeticion(req)
   if (!token) {
     return res.status(401).json({ success: false, error: 'Acceso denegado. Token requerido.' })
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET)
-    req.user = decoded
+    req.user = await usuarioDelToken(token)
     next()
-  } catch (err) {
+  } catch {
     return res.status(401).json({ success: false, error: 'Token inválido o expirado.' })
   }
 }
 
 function requireAdmin(req, res, next) {
-  if (!req.user || !req.user.isAdmin) {
+  if (!req.user?.isAdmin) {
     return res.status(403).json({ success: false, error: 'Acceso denegado. Se requieren permisos de administrador.' })
   }
   next()
 }
 
-function optionalAuth(req, res, next) {
-  const authHeader = req.headers.authorization
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+async function optionalAuth(req, res, next) {
+  const token = tokenDeLaPeticion(req)
+  if (token) {
     try {
-      req.user = jwt.verify(authHeader.substring(7), JWT_SECRET)
+      req.user = await usuarioDelToken(token)
     } catch {
-      // Ignore invalid tokens in optional auth
+      // En las rutas opcionales, un token invalido se trata como visitante
     }
   }
   next()

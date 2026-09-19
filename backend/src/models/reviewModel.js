@@ -1,29 +1,28 @@
-import { getDb } from '../database/connection.js'
+import { getDb } from '../database/firestore.js'
 import { v4 as uuidv4 } from 'uuid'
 
-function formatReview(doc) {
-  if (!doc) return null
-  const { _id, ...rest } = doc
-  return { id: _id.toString(), ...rest }
-}
+const coleccion = () => getDb().collection('reviews')
+
+const formatReview = (doc) => (doc?.exists ? { id: doc.id, ...doc.data() } : null)
 
 export async function getReviewsByProduct(productId) {
-  const db = getDb()
-  const reviews = await db.collection('reviews').find({ productId }).sort({ createdAt: -1 }).toArray()
-  return reviews.map(formatReview)
+  // Se ordena en memoria: where + orderBy pediria un indice compuesto que
+  // habria que crear a mano en la consola de Firebase.
+  const snap = await coleccion().where('productId', '==', productId).get()
+  return snap.docs
+    .map(formatReview)
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
 }
 
 export async function createReview({ productId, author, rating, comment }) {
-  const db = getDb()
   const id = uuidv4()
   const review = {
-    _id: id,
     productId,
     author,
     rating: Number(rating),
     comment,
     createdAt: new Date()
   }
-  await db.collection('reviews').insertOne(review)
-  return formatReview(review)
+  await coleccion().doc(id).set(review)
+  return { id, ...review }
 }
