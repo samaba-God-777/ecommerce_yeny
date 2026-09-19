@@ -58,11 +58,22 @@ async function seed() {
   console.log(`✓ ${seedData.products.length} productos insertados`)
 
   // Insertar usuario admin
-  const adminHash = bcrypt.hashSync('admin123', 10)
+  //
+  // La clave sale del entorno: si se deja escrita aqui, cualquiera que lea el
+  // repo puede entrar al panel. Sin ADMIN_PASSWORD el seed no continua.
+  const adminUser = process.env.ADMIN_USERNAME || 'admin'
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@yenyleths.com'
+  const adminPassword = process.env.ADMIN_PASSWORD
+  if (!adminPassword || adminPassword.length < 8) {
+    console.error('\n✗ Falta ADMIN_PASSWORD (minimo 8 caracteres).')
+    console.error('  Ejemplo:  ADMIN_PASSWORD="la-que-elijas" node seed.js\n')
+    process.exit(1)
+  }
+  const adminHash = bcrypt.hashSync(adminPassword, 10)
   await db.collection('users').insertOne({
     _id: 'admin-1',
-    username: 'admin',
-    email: 'admin@yenyleths.com',
+    username: adminUser,
+    email: adminEmail,
     passwordHash: adminHash,
     isAdmin: true,
     phone: '',
@@ -70,19 +81,26 @@ async function seed() {
     createdAt: new Date()
   })
 
-  // Insertar usuario normal
-  const userHash = bcrypt.hashSync('123456', 10)
-  await db.collection('users').insertOne({
-    _id: 'user-1',
-    username: 'Willy',
-    email: 'degraciawilliams10@gmail.com',
-    passwordHash: userHash,
-    isAdmin: false,
-    phone: '',
-    address: '',
-    createdAt: new Date()
-  })
-  console.log('✓ 2 usuarios insertados (admin + user)')
+  // Insertar usuario de prueba (opcional)
+  //
+  // Solo se crea si se pide con DEMO_USER_PASSWORD. Antes venia con una clave
+  // fija en el codigo, que en un repo publico equivale a dejar la cuenta abierta.
+  const demoPassword = process.env.DEMO_USER_PASSWORD
+  if (demoPassword) {
+    await db.collection('users').insertOne({
+      _id: 'user-1',
+      username: process.env.DEMO_USER_NAME || 'demo',
+      email: process.env.DEMO_USER_EMAIL || 'demo@yenyleths.com',
+      passwordHash: bcrypt.hashSync(demoPassword, 10),
+      isAdmin: false,
+      phone: '',
+      address: '',
+      createdAt: new Date()
+    })
+    console.log('✓ 2 usuarios insertados (admin + demo)')
+  } else {
+    console.log('✓ 1 usuario insertado (admin). Para uno de prueba: DEMO_USER_PASSWORD=...')
+  }
 
   // Insertar conversaciones
   for (const c of seedData.conversations) {
@@ -125,8 +143,8 @@ async function seed() {
 
   console.log('\n🎉 Seed completado exitosamente!')
   console.log('\nCredenciales admin:')
-  console.log('  Usuario: admin')
-  console.log('  Contraseña: admin123')
+  console.log(`  Usuario: ${adminUser}`)
+  console.log('  Contraseña: la que pasaste en ADMIN_PASSWORD')
 
   await client.close()
   process.exit(0)

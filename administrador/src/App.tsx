@@ -205,8 +205,8 @@ export default function App() {
           <h1 className="text-2xl font-extrabold tracking-tight text-ink mb-1">Yenyleths</h1>
           <p className="text-market font-mono text-xs tracking-[0.2em] uppercase mb-8">Panel de Administración</p>
           <div className="bg-card border border-line rounded-xl shadow-lg p-6 text-left space-y-4">
-            <input id="login-user" placeholder="Usuario" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" defaultValue="admin" />
-            <input id="login-pass" type="password" placeholder="Contraseña" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" defaultValue="admin123" />
+            <input id="login-user" placeholder="Usuario" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" autoComplete="username" />
+            <input id="login-pass" type="password" placeholder="Contraseña" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" autoComplete="current-password" />
             <button onClick={async () => {
               const u = (document.getElementById('login-user') as HTMLInputElement).value
               const p = (document.getElementById('login-pass') as HTMLInputElement).value
