@@ -13,7 +13,7 @@ import logger from '../utils/logger.js'
  *
  *  1. FIRESTORE_EMULATOR_HOST — desarrollo con el emulador, sin credenciales.
  *  2. FIREBASE_SERVICE_ACCOUNT — el JSON de la cuenta de servicio en una sola
- *     variable (lo comodo en Render: se pega tal cual).
+ *     variable (lo comodo en Cloud Run: se pega el JSON tal cual).
  *  3. GOOGLE_APPLICATION_CREDENTIALS — ruta a ese mismo JSON en disco.
  *
  * La clave privada admite los saltos de linea escapados (\n), porque al pegar

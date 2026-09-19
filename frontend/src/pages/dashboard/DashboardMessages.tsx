@@ -9,7 +9,7 @@ import {
 import VideoCall from '../../components/VideoCall'
 import IncomingCallNotification from '../../components/IncomingCallNotification'
 import { playRingtone, stopRingtone, playNotificationSound } from '../../utils/ringtone'
-import { API_BASE as API, API_ORIGIN } from '../../lib/urls'
+import { API_BASE as API, SOCKET_URL } from '../../lib/urls'
 
 
 
@@ -85,7 +85,7 @@ export default function DashboardMessages() {
 
   // Socket.io setup
   useEffect(() => {
-    const socket = io(API_ORIGIN, {
+    const socket = io(SOCKET_URL, {
       reconnection: true,
       reconnectionDelay: 500,
       reconnectionDelayMax: 3000,

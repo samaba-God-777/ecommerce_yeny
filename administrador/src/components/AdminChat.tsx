@@ -9,9 +9,9 @@ import {
 import VideoCall from './VideoCall'
 import IncomingCallNotification from './IncomingCallNotification'
 import { playRingtone, stopRingtone, playNotificationSound } from '../utils/ringtone'
-import { API_BASE as API, API_ORIGIN } from '../lib/urls'
+import { API_BASE as API, SOCKET_URL } from '../lib/urls'
 
-const SIGNALING_SERVER = API_ORIGIN
+const SIGNALING_SERVER = SOCKET_URL
 
 interface Message {
   id: string

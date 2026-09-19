@@ -24,7 +24,7 @@ import Dashboard from './features/dashboard/components/DashboardHome'
 import api from './lib/api'
 import { auth, mensajeDeError } from './lib/firebase'
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'
-import { STORE_URL, API_ORIGIN } from './lib/urls'
+import { STORE_URL, SOCKET_URL } from './lib/urls'
 
 interface Category { id: string; name: string; slug: string; image: string | null }
 interface Product {
@@ -34,7 +34,6 @@ interface Product {
   isBestSeller?: boolean; isTrending?: boolean
 }
 
-const SOCKET_URL = API_ORIGIN
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
