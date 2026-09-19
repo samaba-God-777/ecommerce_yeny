@@ -1,107 +1,75 @@
-import { getDb, getAuth } from '../database/firestore.js'
+import { getDb } from '../database/firestore.js'
+import { v4 as uuidv4 } from 'uuid'
+import bcrypt from 'bcryptjs'
 
-/**
- * Usuarios sobre Firebase.
- *
- * Reparto de responsabilidades:
- *  - Firebase Auth guarda correo y contrasena, y emite los tokens. La app
- *    nunca ve ni almacena contrasenas.
- *  - Firestore ("users", con el uid de Auth como id) guarda el perfil:
- *    nombre de usuario, telefono, direccion y la fecha de alta.
- *  - "isAdmin" vive como custom claim en Auth, para que el token lo traiga y
- *    no haya que leer Firestore en cada peticion.
- */
+const COLLECTION = 'users'
 
-const coleccion = () => getDb().collection('users')
-
-function formatUser(doc, claims = {}) {
-  if (!doc?.exists) return null
-  const { passwordHash, ...datos } = doc.data()
-  return { id: doc.id, ...datos, isAdmin: !!claims.isAdmin }
+function formatUser(doc) {
+  if (!doc) return null
+  return { id: doc.id, ...doc.data() }
 }
 
 export async function createUser({ id, username, email, password, isAdmin = false }) {
-  const auth = getAuth()
-
-  // Auth es la fuente de la verdad de las credenciales
-  const registro = await auth.createUser({
-    ...(id && { uid: id }),
-    email,
-    password,
-    displayName: username
-  })
-
-  if (isAdmin) await auth.setCustomUserClaims(registro.uid, { isAdmin: true })
-
-  const perfil = {
+  const db = getDb()
+  const passwordHash = bcrypt.hashSync(password, 10)
+  const user = {
     username,
     email,
+    passwordHash,
     isAdmin: !!isAdmin,
     phone: '',
     address: '',
-    createdAt: new Date()
+    createdAt: new Date().toISOString()
   }
-  await coleccion().doc(registro.uid).set(perfil)
-
-  return { id: registro.uid, ...perfil }
+  await db.collection(COLLECTION).doc(id || uuidv4()).set(user)
+  return getUserByUsername(username)
 }
 
 export async function getUserByUsername(username) {
-  const snap = await coleccion().where('username', '==', username).limit(1).get()
-  if (snap.empty) return null
-  return withClaims(snap.docs[0])
+  const db = getDb()
+  const snapshot = await db.collection(COLLECTION).where('username', '==', username).limit(1).get()
+  if (snapshot.empty) return null
+  return formatUser(snapshot.docs[0])
 }
 
 export async function getUserByEmail(email) {
-  const snap = await coleccion().where('email', '==', email).limit(1).get()
-  if (snap.empty) return null
-  return withClaims(snap.docs[0])
+  const db = getDb()
+  const snapshot = await db.collection(COLLECTION).where('email', '==', email).limit(1).get()
+  if (snapshot.empty) return null
+  return formatUser(snapshot.docs[0])
 }
 
 export async function getUserById(id) {
-  const doc = await coleccion().doc(id).get()
+  const db = getDb()
+  const doc = await db.collection(COLLECTION).doc(id).get()
   if (!doc.exists) return null
-  return withClaims(doc)
-}
-
-async function withClaims(doc) {
-  let claims = {}
-  try {
-    const registro = await getAuth().getUser(doc.id)
-    claims = registro.customClaims || {}
-  } catch {
-    // El perfil existe en Firestore pero no en Auth: se trata como no admin
-  }
-  return formatUser(doc, claims)
+  return formatUser(doc)
 }
 
 export async function getAllUsers() {
-  const snap = await coleccion().orderBy('createdAt', 'desc').get()
-  return snap.docs.map(d => formatUser(d, { isAdmin: d.data().isAdmin }))
+  const db = getDb()
+  const snapshot = await db.collection(COLLECTION).orderBy('createdAt', 'desc').get()
+  return snapshot.docs.map(formatUser)
 }
 
 export async function updatePassword(id, newPassword) {
-  // La contrasena la guarda Auth, no Firestore
-  await getAuth().updateUser(id, { password: newPassword })
+  const db = getDb()
+  const hash = bcrypt.hashSync(newPassword, 10)
+  await db.collection(COLLECTION).doc(id).update({ passwordHash: hash })
 }
 
 export async function updateProfile(id, data) {
+  const db = getDb()
   const updates = {}
   for (const key of ['username', 'email', 'phone', 'address']) {
     if (data[key] !== undefined) updates[key] = data[key]
   }
   if (Object.keys(updates).length > 0) {
-    await coleccion().doc(id).update(updates)
-    // El correo y el nombre visible tambien viven en Auth
-    const enAuth = {}
-    if (updates.email) enAuth.email = updates.email
-    if (updates.username) enAuth.displayName = updates.username
-    if (Object.keys(enAuth).length) await getAuth().updateUser(id, enAuth)
+    await db.collection(COLLECTION).doc(id).update(updates)
   }
   return getUserById(id)
 }
 
-export async function setAdmin(id, esAdmin) {
-  await getAuth().setCustomUserClaims(id, { isAdmin: !!esAdmin })
-  await coleccion().doc(id).update({ isAdmin: !!esAdmin })
+export function verifyPassword(user, password) {
+  return bcrypt.compareSync(password, user.passwordHash)
 }

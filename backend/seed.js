@@ -1,98 +1,45 @@
+import { initializeApp, cert, getApps, getApp } from 'firebase-admin/app'
+import { getFirestore } from 'firebase-admin/firestore'
+import bcrypt from 'bcryptjs'
 import fs from 'fs'
-import { connectToFirestore, getDb, getAuth, closeDb } from './src/database/firestore.js'
-import { preguntar } from './scripts/lib/preguntar.js'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
 
-/**
- * Carga los datos iniciales en Firestore y crea el administrador.
- *
- * El admin se crea en Firebase Auth (correo + contrasena) y su perfil queda en
- * Firestore; el permiso viaja como custom claim, que es lo que lee el backend.
- *
- * Uso:
- *   node seed.js                     → pide la contrasena por teclado
- *   ADMIN_PASSWORD="..." node seed.js
- *
- * Opcionales: ADMIN_USERNAME, ADMIN_EMAIL, DEMO_USER_PASSWORD.
- */
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
-const COLECCIONES = ['categories', 'products', 'users', 'conversations', 'messages', 'orders', 'coupons', 'reviews', 'notifications']
+const serviceAccount = JSON.parse(fs.readFileSync(join(__dirname, 'clave-firebase.json'), 'utf-8'))
+if (serviceAccount.private_key) serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n')
 
-async function borrarColeccion(db, nombre) {
-  // Firestore no sabe "borrar coleccion": hay que ir por lotes de 500.
-  let borrados = 0
-  for (;;) {
-    const snap = await db.collection(nombre).limit(500).get()
-    if (snap.empty) return borrados
-    const lote = db.batch()
-    snap.docs.forEach(doc => lote.delete(doc.ref))
-    await lote.commit()
-    borrados += snap.size
-  }
-}
-
-async function crearCuenta({ uid, email, password, username, isAdmin }) {
-  const auth = getAuth()
-
-  // Si la cuenta ya existe en Auth (de un seed anterior) se reutiliza y se le
-  // pone la contrasena nueva: Auth no admite dos cuentas con el mismo correo.
-  let registro
-  try {
-    registro = await auth.getUserByEmail(email)
-    await auth.updateUser(registro.uid, { password, displayName: username })
-  } catch {
-    registro = await auth.createUser({ uid, email, password, displayName: username })
-  }
-
-  await auth.setCustomUserClaims(registro.uid, { isAdmin: !!isAdmin })
-  return registro.uid
-}
+const app = getApps().length ? getApp() : initializeApp({ credential: cert(serviceAccount) })
+const db = getFirestore(app)
 
 async function seed() {
-  // Las credenciales se resuelven antes de tocar la base: si aqui se cancela
-  // o no coinciden, nada se ha borrado todavia.
-  const adminUser = process.env.ADMIN_USERNAME || 'admin'
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@yenyleths.com'
+  console.log('Conectado a Firebase Firestore...')
 
-  let adminPassword = process.env.ADMIN_PASSWORD
-  if (!adminPassword && process.stdin.isTTY) {
-    adminPassword = await preguntar(`Contrasena para el admin "${adminUser}" (no se muestra): `, true)
-    const repetida = await preguntar('Repitela: ', true)
-    if (adminPassword !== repetida) {
-      console.error('✗ No coinciden')
-      process.exit(1)
-    }
-  }
-  if (!adminPassword || adminPassword.length < 8) {
-    console.error('\n✗ Falta ADMIN_PASSWORD (minimo 8 caracteres).')
-    console.error('  Ejemplo:  ADMIN_PASSWORD="la-que-elijas" node seed.js\n')
-    process.exit(1)
+  const collections = ['categories', 'products', 'users', 'conversations', 'messages', 'orders', 'coupons', 'reviews', 'notifications']
+  for (const col of collections) {
+    const snap = await db.collection(col).get()
+    const batch = db.batch()
+    snap.docs.forEach(doc => batch.delete(doc.ref))
+    await batch.commit()
+    console.log(`✓ Colección ${col} limpiada`)
   }
 
-  await connectToFirestore()
-  const db = getDb()
-  console.log('Conectado a Firestore...')
-
-  for (const col of COLECCIONES) {
-    const borrados = await borrarColeccion(db, col)
-    console.log(`✓ Colección ${col} limpiada (${borrados})`)
-  }
-
-  const seedData = JSON.parse(fs.readFileSync('db.json', 'utf-8'))
-
-  // Un solo lote: mucho mas rapido y barato que documento a documento
-  const lote = db.batch()
+  const seedData = JSON.parse(fs.readFileSync(join(__dirname, 'db.json'), 'utf-8'))
 
   for (const cat of seedData.categories) {
-    lote.set(db.collection('categories').doc(String(cat.id)), {
+    await db.collection('categories').doc(cat.id).set({
       name: cat.name,
       slug: cat.slug,
       image: cat.image || null,
-      createdAt: new Date()
+      createdAt: new Date().toISOString()
     })
   }
+  console.log(`✓ ${seedData.categories.length} categorías insertadas`)
 
   for (const p of seedData.products) {
-    lote.set(db.collection('products').doc(String(p.id)), {
+    await db.collection('products').doc(p.id).set({
       name: p.name,
       categoryId: p.categoryId,
       brand: p.brand || '',
@@ -107,105 +54,83 @@ async function seed() {
       flashSaleEnd: p.flashSaleEnd || null,
       isBestSeller: !!p.isBestSeller,
       isTrending: !!p.isTrending,
-      createdAt: new Date()
+      createdAt: new Date().toISOString()
     })
   }
+  console.log(`✓ ${seedData.products.length} productos insertados`)
+
+  const adminHash = bcrypt.hashSync('admin123', 10)
+  await db.collection('users').doc('admin-1').set({
+    username: 'admin',
+    email: 'admin@yenyleths.com',
+    passwordHash: adminHash,
+    isAdmin: true,
+    phone: '',
+    address: '',
+    createdAt: new Date().toISOString()
+  })
+
+  const userHash = bcrypt.hashSync('123456', 10)
+  await db.collection('users').doc('user-1').set({
+    username: 'Willy',
+    email: 'degraciawilliams10@gmail.com',
+    passwordHash: userHash,
+    isAdmin: false,
+    phone: '',
+    address: '',
+    createdAt: new Date().toISOString()
+  })
+  console.log('✓ 2 usuarios insertados (admin + user)')
 
   for (const c of seedData.conversations) {
-    lote.set(db.collection('conversations').doc(String(c.id)), {
+    await db.collection('conversations').doc(c.id).set({
       customerName: c.customerName,
       customerEmail: c.customerEmail || '',
       customerId: c.customerId || '',
       lastMessage: c.lastMessage || '',
-      lastMessageTime: new Date(c.lastMessageTime),
+      lastMessageTime: new Date(c.lastMessageTime).toISOString(),
       unread: c.unread || 0,
       avatar: c.avatar || ''
     })
   }
+  console.log(`✓ ${seedData.conversations.length} conversaciones insertadas`)
 
   for (const m of seedData.messages) {
-    lote.set(db.collection('messages').doc(String(m.id)), {
+    await db.collection('messages').doc(m.id).set({
       conversationId: m.conversationId,
       sender: m.sender || 'customer',
       senderName: m.senderName || 'Cliente',
       text: m.text,
-      timestamp: new Date(m.timestamp)
+      timestamp: new Date(m.timestamp).toISOString()
     })
   }
+  console.log(`✓ ${seedData.messages.length} mensajes insertados`)
 
-  const proximoAnio = new Date()
-  proximoAnio.setFullYear(proximoAnio.getFullYear() + 1)
-  const cupones = [
-    { id: 'coup-1', code: 'BIENVENIDO10', discount: 10, type: 'percent', maxUses: 100 },
-    { id: 'coup-2', code: 'YENYLETHS20', discount: 20, type: 'percent', maxUses: 50 },
-    { id: 'coup-3', code: 'ENVIOGRATIS', discount: 100, type: 'free_shipping', maxUses: 200 }
+  const nextYear = new Date()
+  nextYear.setFullYear(nextYear.getFullYear() + 1)
+
+  const coupons = [
+    { code: 'BIENVENIDO10', discount: 10, type: 'percent', maxUses: 100 },
+    { code: 'YENYLETHS20', discount: 20, type: 'percent', maxUses: 50 },
+    { code: 'ENVIOGRATIS', discount: 100, type: 'free_shipping', maxUses: 200 }
   ]
-  for (const c of cupones) {
-    lote.set(db.collection('coupons').doc(c.id), {
-      code: c.code,
-      discount: c.discount,
-      type: c.type,
+  for (let i = 0; i < coupons.length; i++) {
+    await db.collection('coupons').doc(`coup-${i + 1}`).set({
+      ...coupons[i],
       uses: 0,
-      maxUses: c.maxUses,
       minAmount: 0,
-      expires: proximoAnio,
+      expires: nextYear.toISOString(),
       active: true,
-      createdAt: new Date()
+      createdAt: new Date().toISOString()
     })
   }
+  console.log('✓ 3 cupones insertados')
 
-  await lote.commit()
-  console.log(`✓ ${seedData.categories.length} categorías, ${seedData.products.length} productos, ${cupones.length} cupones`)
-  console.log(`✓ ${seedData.conversations.length} conversaciones, ${seedData.messages.length} mensajes`)
+  console.log('\n🎉 Seed completado exitosamente!')
+  console.log('\nCredenciales admin:')
+  console.log('  Usuario: admin')
+  console.log('  Contraseña: admin123')
 
-  // Administrador: cuenta en Auth + perfil en Firestore
-  const adminUid = await crearCuenta({
-    uid: 'admin-1',
-    email: adminEmail,
-    password: adminPassword,
-    username: adminUser,
-    isAdmin: true
-  })
-  await db.collection('users').doc(adminUid).set({
-    username: adminUser,
-    email: adminEmail,
-    isAdmin: true,
-    phone: '',
-    address: '',
-    createdAt: new Date()
-  })
-  console.log('✓ Administrador creado')
-
-  const demoPassword = process.env.DEMO_USER_PASSWORD
-  if (demoPassword) {
-    const demoNombre = process.env.DEMO_USER_NAME || 'demo'
-    const demoEmail = process.env.DEMO_USER_EMAIL || 'demo@yenyleths.com'
-    const demoUid = await crearCuenta({
-      uid: 'user-1',
-      email: demoEmail,
-      password: demoPassword,
-      username: demoNombre,
-      isAdmin: false
-    })
-    await db.collection('users').doc(demoUid).set({
-      username: demoNombre,
-      email: demoEmail,
-      isAdmin: false,
-      phone: '',
-      address: '',
-      createdAt: new Date()
-    })
-    console.log('✓ Usuario de prueba creado')
-  } else {
-    console.log('✓ Sin usuario de prueba. Para crearlo: DEMO_USER_PASSWORD=...')
-  }
-
-  console.log('\n🎉 Seed completado')
-  console.log('\nEntra al panel con:')
-  console.log(`  Correo: ${adminEmail}`)
-  console.log('  Contraseña: la que acabas de escribir')
-
-  await closeDb()
   process.exit(0)
 }
 
