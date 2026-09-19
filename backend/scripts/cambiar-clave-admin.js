@@ -11,15 +11,32 @@
  */
 import { MongoClient } from 'mongodb'
 import bcrypt from 'bcryptjs'
+import { preguntar } from './lib/preguntar.js'
 
-const { MONGODB_URI, ADMIN_PASSWORD, ADMIN_USERNAME = 'admin' } = process.env
+const { MONGODB_URI, ADMIN_USERNAME = 'admin' } = process.env
 
 if (!MONGODB_URI) {
   console.error('✗ Falta MONGODB_URI')
   process.exit(1)
 }
-if (!ADMIN_PASSWORD || ADMIN_PASSWORD.length < 8) {
-  console.error('✗ Falta ADMIN_PASSWORD (minimo 8 caracteres)')
+
+// Sin ADMIN_PASSWORD se pregunta por teclado, oculta: asi la contrasena no
+// queda en el historial del shell ni a la vista de quien pase por detras.
+let nuevaClave = process.env.ADMIN_PASSWORD
+if (!nuevaClave) {
+  if (!process.stdin.isTTY) {
+    console.error('✗ Falta ADMIN_PASSWORD')
+    process.exit(1)
+  }
+  nuevaClave = await preguntar(`Nueva contrasena para "${ADMIN_USERNAME}" (no se muestra): `, true)
+  const repetida = await preguntar('Repitela: ', true)
+  if (nuevaClave !== repetida) {
+    console.error('✗ No coinciden')
+    process.exit(1)
+  }
+}
+if (!nuevaClave || nuevaClave.length < 8) {
+  console.error('✗ La contrasena necesita al menos 8 caracteres')
   process.exit(1)
 }
 
@@ -40,7 +57,7 @@ try {
 
   await db.collection('users').updateOne(
     { _id: user._id },
-    { $set: { passwordHash: bcrypt.hashSync(ADMIN_PASSWORD, 10) } }
+    { $set: { passwordHash: bcrypt.hashSync(nuevaClave, 10) } }
   )
 
   console.log(`✓ Contrasena actualizada para "${ADMIN_USERNAME}" (admin: ${!!user.isAdmin})`)

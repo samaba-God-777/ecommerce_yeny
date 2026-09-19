@@ -1,11 +1,33 @@
 import { MongoClient } from 'mongodb'
 import bcrypt from 'bcryptjs'
+import { preguntar } from './scripts/lib/preguntar.js'
 import fs from 'fs'
 
 const MONGODB_URI = process.env.MONGODB_URI
 const DB_NAME = 'yenyleths'
 
 async function seed() {
+  // Las credenciales se resuelven antes de tocar la base: si aqui se cancela
+  // o no coinciden, nada se ha borrado todavia.
+  const adminUser = process.env.ADMIN_USERNAME || 'admin'
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@yenyleths.com'
+  // Sin ADMIN_PASSWORD se pregunta por teclado, oculta, para no dejarla en el
+  // historial del shell.
+  let adminPassword = process.env.ADMIN_PASSWORD
+  if (!adminPassword && process.stdin.isTTY) {
+    adminPassword = await preguntar(`Contrasena para el admin "${adminUser}" (no se muestra): `, true)
+    const repetida = await preguntar('Repitela: ', true)
+    if (adminPassword !== repetida) {
+      console.error('✗ No coinciden')
+      process.exit(1)
+    }
+  }
+  if (!adminPassword || adminPassword.length < 8) {
+    console.error('\n✗ Falta ADMIN_PASSWORD (minimo 8 caracteres).')
+    console.error('  Ejemplo:  ADMIN_PASSWORD="la-que-elijas" node seed.js\n')
+    process.exit(1)
+  }
+
   const client = new MongoClient(MONGODB_URI)
   await client.connect()
   const db = client.db(DB_NAME)
@@ -61,14 +83,6 @@ async function seed() {
   //
   // La clave sale del entorno: si se deja escrita aqui, cualquiera que lea el
   // repo puede entrar al panel. Sin ADMIN_PASSWORD el seed no continua.
-  const adminUser = process.env.ADMIN_USERNAME || 'admin'
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@yenyleths.com'
-  const adminPassword = process.env.ADMIN_PASSWORD
-  if (!adminPassword || adminPassword.length < 8) {
-    console.error('\n✗ Falta ADMIN_PASSWORD (minimo 8 caracteres).')
-    console.error('  Ejemplo:  ADMIN_PASSWORD="la-que-elijas" node seed.js\n')
-    process.exit(1)
-  }
   const adminHash = bcrypt.hashSync(adminPassword, 10)
   await db.collection('users').insertOne({
     _id: 'admin-1',

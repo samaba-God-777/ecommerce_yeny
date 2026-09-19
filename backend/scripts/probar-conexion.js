@@ -8,19 +8,7 @@
  * tipicos. Nunca imprime la cadena ni la contrasena.
  */
 import { MongoClient } from 'mongodb'
-import readline from 'node:readline'
-
-/**
- * Pide un dato por teclado. Con oculto=true no se ve lo que se escribe, asi
- * la contrasena no queda en la pantalla ni en el historial del shell.
- */
-function preguntar(texto, oculto = false) {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true })
-  if (oculto) {
-    rl._writeToOutput = (s) => rl.output.write(s.includes(texto) ? s : '')
-  }
-  return new Promise(resolve => rl.question(texto, (r) => { rl.close(); if (oculto) console.log(); resolve(r.trim()) }))
-}
+import { preguntar } from './lib/preguntar.js'
 
 let MONGODB_URI = process.env.MONGODB_URI
 
