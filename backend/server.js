@@ -102,6 +102,10 @@ app.get('/', (req, res) => {
     message: 'Yenyleths API running',
     db: dbError ? 'sin conexion' : 'conectada',
     ...(dbError && { dbError }),
+    // Segundos desde que arranco el proceso: el estado de la base se mide al
+    // inicio, asi que sin esto no se sabe si un cambio de variable ya tomo
+    // efecto o si sigue corriendo la instancia anterior.
+    uptimeSegundos: Math.round(process.uptime()),
     timestamp: new Date().toISOString()
   })
 })
