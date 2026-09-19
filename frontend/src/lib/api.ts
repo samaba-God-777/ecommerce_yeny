@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { API_BASE } from './urls'
+import { auth } from './firebase'
 
 
 const api = axios.create({
@@ -7,10 +8,12 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' }
 })
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('customerToken')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+// El token lo emite Firebase y caduca a la hora: getIdToken() lo renueva solo
+// cuando hace falta, asi que se pide en cada peticion en vez de guardarlo.
+api.interceptors.request.use(async (config) => {
+  const cuenta = auth.currentUser
+  if (cuenta) {
+    config.headers.Authorization = `Bearer ${await cuenta.getIdToken()}`
   }
   return config
 })
@@ -18,8 +21,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && error.config?.url?.endsWith('/auth/me')) {
-      localStorage.removeItem('customerToken')
+    // Un 401 con sesion activa significa token invalido: se cierra y se vuelve
+    // a entrar. Sin sesion no se redirige, que las rutas publicas tambien
+    // llaman al API.
+    if (error.response?.status === 401 && auth.currentUser) {
+      auth.signOut()
       window.location.href = '/login'
     }
     return Promise.reject(error)

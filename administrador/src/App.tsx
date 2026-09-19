@@ -22,6 +22,8 @@ import PaymentsConfig from './components/PaymentsConfig'
 import ReportsPage from './components/ReportsPage'
 import Dashboard from './features/dashboard/components/DashboardHome'
 import api from './lib/api'
+import { auth, mensajeDeError } from './lib/firebase'
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'
 import { STORE_URL, API_ORIGIN } from './lib/urls'
 
 interface Category { id: string; name: string; slug: string; image: string | null }
@@ -81,22 +83,27 @@ export default function App() {
       }
     }
 
-    const checkAuth = async () => {
-      const t = localStorage.getItem('adminToken')
-      if (!t) return
-
+    // Firebase recuerda la sesion y renueva el token solo; aqui solo se
+    // comprueba que la cuenta siga siendo administradora.
+    const cancelar = onAuthStateChanged(auth, async (cuenta) => {
+      if (!cuenta) {
+        setIsAuthenticated(false)
+        setUsername('')
+        return
+      }
       try {
         const { data } = await api.get('/auth/me')
-        if (data.success) {
+        if (data.success && data.user.isAdmin) {
           setIsAuthenticated(true)
           setUsername(data.user.username)
+        } else {
+          await signOut(auth)
         }
       } catch {
-        localStorage.removeItem('adminToken')
         setIsAuthenticated(false)
       }
-    }
-    checkAuth()
+    })
+    return cancelar
   }, [])
 
   useEffect(() => {
@@ -113,25 +120,27 @@ export default function App() {
     catch (err) { console.error('Error:', err) }
   }
 
-  const handleLogin = async (username: string, password: string) => {
+  const handleLogin = async (email: string, password: string) => {
     try {
-      const { data } = await api.post('/auth/login', { username, password })
-      if (data.success) {
-        localStorage.setItem('adminToken', data.token)
-        document.cookie = `adminToken=${data.token}; path=/; max-age=604800`
-        setIsAuthenticated(true)
-        setUsername(data.user.username)
-        fetchCategories(); fetchProducts()
+      await signInWithEmailAndPassword(auth, email, password)
+
+      // Entrar no basta: el panel es solo para administradores
+      const { data } = await api.get('/auth/me')
+      if (!data.success || !data.user.isAdmin) {
+        await signOut(auth)
+        throw new Error('Esta cuenta no tiene permisos de administrador')
       }
+
+      setIsAuthenticated(true)
+      setUsername(data.user.username)
+      fetchCategories(); fetchProducts()
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'Error al iniciar sesión'
-      throw new Error(msg)
+      throw new Error(err.code ? mensajeDeError(err.code) : err.message || 'Error al iniciar sesión')
     }
   }
 
   const handleLogout = async () => {
-    localStorage.removeItem('adminToken')
-    document.cookie = 'adminToken=; path=/; max-age=0'
+    await signOut(auth)
     setIsAuthenticated(false)
     setUsername('')
     setTab('dashboard')
@@ -205,7 +214,7 @@ export default function App() {
           <h1 className="text-2xl font-extrabold tracking-tight text-ink mb-1">Yenyleths</h1>
           <p className="text-market font-mono text-xs tracking-[0.2em] uppercase mb-8">Panel de Administración</p>
           <div className="bg-card border border-line rounded-xl shadow-lg p-6 text-left space-y-4">
-            <input id="login-user" placeholder="Usuario" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" autoComplete="username" />
+            <input id="login-user" type="email" placeholder="Correo electrónico" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" autoComplete="email" />
             <input id="login-pass" type="password" placeholder="Contraseña" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" autoComplete="current-password" />
             <button onClick={async () => {
               const u = (document.getElementById('login-user') as HTMLInputElement).value

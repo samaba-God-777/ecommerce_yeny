@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth'
+import { auth, mensajeDeError } from '../lib/firebase'
 import { Lock, User, Eye, EyeOff, ShoppingBag, Mail, UserPlus, ArrowLeft, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
-import api from '../lib/api'
 
 export default function Login() {
   const [isRegister, setIsRegister] = useState(false)
@@ -16,7 +17,7 @@ export default function Login() {
   const [success, setSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const { user, loading: authLoading, login } = useAuth()
+  const { user, loading: authLoading, sincronizar } = useAuth()
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -40,18 +41,13 @@ export default function Login() {
     setIsLoading(true)
 
     try {
-      const { data } = await api.post('/auth/login', { username, password })
-      if (data.success) {
-        login(data.token, data.user)
-        toast.success(`¡Bienvenido, ${data.user.username}!`)
-        navigate('/dashboard')
-      }
+      // Firebase Auth identifica por correo, no por nombre de usuario
+      await signInWithEmailAndPassword(auth, email, password)
+      const perfil = await sincronizar()
+      toast.success(`¡Bienvenido, ${perfil?.username || ''}!`)
+      navigate('/dashboard')
     } catch (err: any) {
-      setError(
-        err.response?.data?.error ||
-        (err.response ? 'Usuario o contraseña incorrectos'
-                      : 'No pudimos conectar con el servidor. Revisa tu conexión e intenta de nuevo.')
-      )
+      setError(err.code ? mensajeDeError(err.code) : 'No pudimos iniciar sesión. Inténtalo de nuevo.')
     } finally {
       setIsLoading(false)
     }
@@ -75,19 +71,13 @@ export default function Login() {
     setIsLoading(true)
 
     try {
-      const { data } = await api.post('/auth/register', { username, email, password })
-      if (data.success) {
-        login(data.token, data.user)
-        setSuccess('¡Cuenta creada exitosamente!')
-        toast.success('¡Cuenta creada exitosamente!')
-        setTimeout(() => navigate('/dashboard'), 1000)
-      }
+      await createUserWithEmailAndPassword(auth, email, password)
+      await sincronizar(username)
+      setSuccess('¡Cuenta creada exitosamente!')
+      toast.success('¡Cuenta creada exitosamente!')
+      setTimeout(() => navigate('/dashboard'), 1000)
     } catch (err: any) {
-      setError(
-        err.response?.data?.error ||
-        (err.response ? 'Error al crear la cuenta'
-                      : 'No pudimos conectar con el servidor. Revisa tu conexión e intenta de nuevo.')
-      )
+      setError(err.code ? mensajeDeError(err.code) : 'Error al crear la cuenta')
     } finally {
       setIsLoading(false)
     }
@@ -223,17 +213,18 @@ export default function Login() {
             /* Login Form */
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="relative">
-                <label className="text-sm font-medium text-amber-900">Usuario</label>
+                <label className="text-sm font-medium text-amber-900">Correo electrónico</label>
                 <input
-                  id="usuario"
-                  placeholder="Tu usuario"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="correo"
+                  type="email"
+                  placeholder="tu@correo.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  autoComplete="username"
+                  autoComplete="email"
                   className="w-full mt-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
                 />
-                <User className="absolute right-3 top-9 h-5 w-5 text-slate-400" />
+                <Mail className="absolute right-3 top-9 h-5 w-5 text-slate-400" />
               </div>
 
               <div className="relative">

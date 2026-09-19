@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Lock, Eye, EyeOff, ShoppingBag, ArrowLeft, CheckCircle2, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
-import api from '../lib/api'
+import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth'
+import { auth, mensajeDeError } from '../lib/firebase'
 
 export default function ResetPassword() {
   const [params] = useSearchParams()
-  const token = params.get('token') || ''
+  // Firebase llama a este parametro oobCode; se acepta token por compatibilidad
+  const token = params.get('oobCode') || params.get('token') || ''
   const navigate = useNavigate()
 
   const [password, setPassword] = useState('')
@@ -31,16 +33,18 @@ export default function ResetPassword() {
 
     setIsLoading(true)
     try {
-      await api.post('/auth/reset-password', { token, password })
+      // verify primero: asi un enlace vencido se avisa antes de cambiar nada
+      await verifyPasswordResetCode(auth, token)
+      await confirmPasswordReset(auth, token, password)
       setDone(true)
       toast.success('Contraseña actualizada')
       setTimeout(() => navigate('/login'), 2500)
     } catch (err: any) {
-      setError(
-        err.response?.data?.error ||
-        (err.response ? 'No pudimos cambiar la contraseña. Intenta de nuevo.'
-                      : 'No pudimos conectar con el servidor. Revisa tu conexión e intenta de nuevo.')
-      )
+      if (['auth/expired-action-code', 'auth/invalid-action-code'].includes(err.code)) {
+        setError('El enlace no es válido o ya venció. Pide uno nuevo.')
+      } else {
+        setError(err.code ? mensajeDeError(err.code) : 'No pudimos cambiar la contraseña. Intenta de nuevo.')
+      }
     } finally {
       setIsLoading(false)
     }
