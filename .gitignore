@@ -10,3 +10,8 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 .env.local
+
+# Credenciales de Firebase (cuenta de servicio): NUNCA al repositorio
+clave-firebase.json
+*-firebase-adminsdk-*.json
+serviceAccountKey.json
