@@ -1,33 +1,24 @@
 import { getDb } from '../database/firestore.js'
 
-const COLLECTION = 'categories'
+const coleccion = () => getDb().collection('categories')
 
-function formatCategory(doc) {
-  if (!doc) return null
-  return { id: doc.id, ...doc.data() }
-}
+const formatCategory = (doc) => (doc?.exists ? { id: doc.id, ...doc.data() } : null)
 
 export async function getAllCategories() {
-  const db = getDb()
-  const snapshot = await db.collection(COLLECTION).orderBy('name').get()
-  return snapshot.docs.map(formatCategory)
+  const snap = await coleccion().orderBy('name').get()
+  return snap.docs.map(formatCategory)
 }
 
 export async function getCategoryById(id) {
-  const db = getDb()
-  const doc = await db.collection(COLLECTION).doc(id).get()
-  if (!doc.exists) return null
-  return formatCategory(doc)
+  return formatCategory(await coleccion().doc(String(id)).get())
 }
 
 export async function createCategory({ id, name, slug, image }) {
-  const db = getDb()
-  const category = { name, slug, image: image || null, createdAt: new Date().toISOString() }
-  await db.collection(COLLECTION).doc(id).set(category)
-  return { id, ...category }
+  const category = { name, slug, image, createdAt: new Date() }
+  await coleccion().doc(String(id)).set(category)
+  return { id: String(id), ...category }
 }
 
 export async function deleteCategory(id) {
-  const db = getDb()
-  await db.collection(COLLECTION).doc(id).delete()
+  await coleccion().doc(String(id)).delete()
 }

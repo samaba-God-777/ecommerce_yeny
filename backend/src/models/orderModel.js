@@ -1,18 +1,21 @@
 import { getDb } from '../database/firestore.js'
 import { v4 as uuidv4 } from 'uuid'
 import { decrementStock, restoreStock } from './productModel.js'
+import logger from '../utils/logger.js'
 
-const COLLECTION = 'orders'
+const coleccion = () => getDb().collection('orders')
 
-function formatOrder(doc) {
-  if (!doc) return null
-  return { id: doc.id, ...doc.data() }
-}
+const formatOrder = (doc) => (doc?.exists ? { id: doc.id, ...doc.data() } : null)
+
+// Igual que en productos: se filtra con where() y se ordena en memoria, para no
+// depender de indices compuestos creados a mano en la consola de Firebase.
+const TOPE_LECTURA = 2000
+
+const porFecha = (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
 
 export async function createOrder({ customerId, customerName, customerEmail, customerPhone, address, paymentMethod, items, subtotal, shipping, tax, total, couponCode }) {
-  const db = getDb()
   const id = 'ORD-' + uuidv4().slice(0, 8).toUpperCase()
-  const now = new Date().toISOString()
+  const now = new Date()
 
   const order = {
     customerId: customerId || null,
@@ -42,32 +45,31 @@ export async function createOrder({ customerId, customerName, customerEmail, cus
     updatedAt: now
   }
 
-  await db.collection(COLLECTION).doc(id).set(order)
+  await coleccion().doc(id).set(order)
 
   for (const item of items) {
-    await decrementStock(item.productId, item.quantity)
+    const descontado = await decrementStock(item.productId, item.quantity)
+    if (!descontado) {
+      // Antes pasaba igual pero en silencio: el pedido queda registrado y el
+      // stock sin tocar, asi que conviene que se vea en el log.
+      logger.warn(`Pedido ${id}: sin stock suficiente de ${item.productId} (x${item.quantity})`)
+    }
   }
 
   return getOrderById(id)
 }
 
 export async function getAllOrders(filters = {}) {
-  const db = getDb()
-  let query = db.collection(COLLECTION)
-
+  let query = coleccion()
   if (filters.status) query = query.where('orderStatus', '==', filters.status)
   if (filters.customerId) query = query.where('customerId', '==', filters.customerId)
 
-  query = query.orderBy('createdAt', 'desc')
-  const snapshot = await query.get()
-  return snapshot.docs.map(formatOrder)
+  const snap = await query.limit(TOPE_LECTURA).get()
+  return snap.docs.map(formatOrder).sort(porFecha)
 }
 
 export async function getOrderById(id) {
-  const db = getDb()
-  const doc = await db.collection(COLLECTION).doc(id).get()
-  if (!doc.exists) return null
-  return formatOrder(doc)
+  return formatOrder(await coleccion().doc(String(id)).get())
 }
 
 export async function getOrdersByCustomer(customerId) {
@@ -75,7 +77,6 @@ export async function getOrdersByCustomer(customerId) {
 }
 
 export async function updateOrderStatus(id, status) {
-  const db = getDb()
   const order = await getOrderById(id)
   if (!order) return null
 
@@ -85,20 +86,18 @@ export async function updateOrderStatus(id, status) {
     }
   }
 
-  await db.collection(COLLECTION).doc(id).update({ orderStatus: status, updatedAt: new Date().toISOString() })
+  await coleccion().doc(String(id)).update({ orderStatus: status, updatedAt: new Date() })
   return getOrderById(id)
 }
 
 export async function updateOrderPayment(id, paymentStatus) {
-  const db = getDb()
-  await db.collection(COLLECTION).doc(id).update({ paymentStatus, updatedAt: new Date().toISOString() })
+  await coleccion().doc(String(id)).update({ paymentStatus, updatedAt: new Date() })
   return getOrderById(id)
 }
 
 export async function getOrdersStats() {
-  const db = getDb()
-  const snapshot = await db.collection(COLLECTION).get()
-  const orders = snapshot.docs.map(formatOrder)
+  const snap = await coleccion().limit(TOPE_LECTURA).get()
+  const orders = snap.docs.map(formatOrder)
 
   const totalOrders = orders.length
   const paidOrders = orders.filter(o => o.paymentStatus === 'paid')

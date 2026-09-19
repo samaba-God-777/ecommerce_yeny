@@ -1,29 +1,28 @@
 import { getDb } from '../database/firestore.js'
 import { v4 as uuidv4 } from 'uuid'
 
-const COLLECTION = 'reviews'
+const coleccion = () => getDb().collection('reviews')
 
-function formatReview(doc) {
-  if (!doc) return null
-  return { id: doc.id, ...doc.data() }
-}
+const formatReview = (doc) => (doc?.exists ? { id: doc.id, ...doc.data() } : null)
 
 export async function getReviewsByProduct(productId) {
-  const db = getDb()
-  const snapshot = await db.collection(COLLECTION).where('productId', '==', productId).orderBy('createdAt', 'desc').get()
-  return snapshot.docs.map(formatReview)
+  // Se ordena en memoria: where + orderBy pediria un indice compuesto que
+  // habria que crear a mano en la consola de Firebase.
+  const snap = await coleccion().where('productId', '==', productId).get()
+  return snap.docs
+    .map(formatReview)
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
 }
 
 export async function createReview({ productId, author, rating, comment }) {
-  const db = getDb()
   const id = uuidv4()
   const review = {
     productId,
     author,
     rating: Number(rating),
     comment,
-    createdAt: new Date().toISOString()
+    createdAt: new Date()
   }
-  await db.collection(COLLECTION).doc(id).set(review)
+  await coleccion().doc(id).set(review)
   return { id, ...review }
 }
