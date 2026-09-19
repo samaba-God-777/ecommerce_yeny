@@ -1,23 +1,22 @@
-import { getDb } from '../database/connection.js'
-import { getLowStock as getLowStockProducts } from '../models/productModel.js'
+import { getDb } from '../database/firestore.js'
+import {
+  getLowStock as getLowStockProducts,
+  decrementStock as decrementProductStock,
+  restoreStock as restoreProductStock
+} from '../models/productModel.js'
 
-export async function decrementStock(productId, quantity) {
-  const db = getDb()
-  await db.collection('products').updateOne({ _id: productId, stock: { $gte: quantity } }, { $inc: { stock: -quantity } })
-}
-
-export async function restoreStock(productId, quantity) {
-  const db = getDb()
-  await db.collection('products').updateOne({ _id: productId }, { $inc: { stock: quantity } })
-}
+// El control de stock vive en productModel: alli el descuento va dentro de una
+// transaccion para que dos compras del ultimo articulo no lo dejen negativo.
+export const decrementStock = decrementProductStock
+export const restoreStock = restoreProductStock
 
 export async function checkLowStock(threshold = 5) {
   return getLowStockProducts(threshold)
 }
 
 export async function getStockAlerts() {
-  const db = getDb()
   const lowStock = await checkLowStock(5)
-  const outOfStock = await db.collection('products').find({ stock: 0 }).toArray()
+  const snap = await getDb().collection('products').where('stock', '==', 0).get()
+  const outOfStock = snap.docs.map(d => ({ id: d.id, ...d.data() }))
   return { lowStock, outOfStock }
 }

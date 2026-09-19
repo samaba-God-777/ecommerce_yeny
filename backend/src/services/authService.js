@@ -1,99 +1,60 @@
-import jwt from 'jsonwebtoken'
-import crypto from 'crypto'
-import { v4 as uuidv4 } from 'uuid'
-import {
-  createUser, getUserByUsername, getUserByEmail, getUserById, verifyPassword,
-  savePasswordResetToken, getUserByResetToken, clearPasswordResetToken, updatePassword
-} from '../models/userModel.js'
-import { sendMail, passwordResetEmail, mailConfigured } from './mailService.js'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'yenyleths-dev-secret-key-2026'
-
-// Ventana corta: el enlace llega al correo y se usa enseguida.
-const RESET_TTL_MINUTES = 30
-
-const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex')
-
-function generateToken(user) {
-  return jwt.sign(
-    { id: user.id, username: user.username, isAdmin: !!user.isAdmin },
-    JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-  )
-}
-
-export async function registerUser(username, email, password) {
-  const existingUsername = await getUserByUsername(username)
-  if (existingUsername) return { success: false, error: 'El usuario ya existe' }
-
-  const existingEmail = await getUserByEmail(email)
-  if (existingEmail) return { success: false, error: 'El correo ya está registrado' }
-
-  const user = await createUser({ id: uuidv4(), username, email, password })
-  const token = generateToken(user)
-
-  return {
-    success: true,
-    user: { id: user.id, username: user.username, email: user.email, isAdmin: false },
-    token
-  }
-}
-
-export async function loginUser(identifier, password) {
-  const isEmail = identifier.includes('@')
-  const user = isEmail ? await getUserByEmail(identifier) : await getUserByUsername(identifier)
-  if (!user) return { success: false, error: 'Usuario o contraseña incorrectos' }
-
-  const valid = verifyPassword(user, password)
-  if (!valid) return { success: false, error: 'Usuario o contraseña incorrectos' }
-
-  const token = generateToken(user)
-
-  return {
-    success: true,
-    user: { id: user.id, username: user.username, email: user.email, isAdmin: !!user.isAdmin },
-    token
-  }
-}
+import { getAuth } from '../database/firestore.js'
+import { createUser, getUserById, getUserByUsername, updateProfile, getAllUsers, setAdmin } from '../models/userModel.js'
 
 /**
- * Manda el enlace de recuperacion al correo indicado.
+ * Autenticacion sobre Firebase Auth.
  *
- * Responde igual exista o no la cuenta: si dijera "ese correo no existe",
- * cualquiera podria averiguar quien esta registrado en la tienda.
+ * El alta y el inicio de sesion ocurren en el cliente con el SDK de Firebase;
+ * el backend solo verifica el token (middleware/auth.js) y mantiene el perfil
+ * en Firestore. Aqui no se manejan contrasenas ni se emiten tokens.
  */
-export async function requestPasswordReset(email, appUrl) {
-  const user = await getUserByEmail(email)
-  if (!user) return { success: true, mailed: false }
-
-  const token = crypto.randomBytes(32).toString('hex')
-  const expiresAt = new Date(Date.now() + RESET_TTL_MINUTES * 60 * 1000)
-  await savePasswordResetToken(user.id, hashToken(token), expiresAt)
-
-  const url = `${appUrl.replace(/\/$/, '')}/reset-password?token=${token}`
-  const { subject, html, text } = passwordResetEmail({
-    username: user.username,
-    url,
-    minutes: RESET_TTL_MINUTES
-  })
-
-  await sendMail({ to: user.email, subject, html, text })
-  return { success: true, mailed: mailConfigured }
-}
 
 /**
- * Cambia la contrasena con el token del correo. El token se quema al usarlo,
- * asi el mismo enlace no sirve dos veces.
+ * Crea el perfil en Firestore la primera vez que entra una cuenta de Auth.
+ *
+ * Se llama despues de registrarse en el cliente: Auth ya tiene la cuenta, pero
+ * Firestore todavia no tiene el nombre de usuario ni el resto del perfil.
  */
-export async function resetPassword(token, newPassword) {
-  const user = await getUserByResetToken(hashToken(token))
-  if (!user) {
-    return { success: false, error: 'El enlace no es válido o ya venció. Pide uno nuevo.' }
+export async function ensureProfile(uid, { username, email } = {}) {
+  const existente = await getUserById(uid)
+  if (existente) return { success: true, user: existente, creado: false }
+
+  const registro = await getAuth().getUser(uid)
+  const nombre = username || registro.displayName || (registro.email || '').split('@')[0]
+
+  // Dos cuentas con el mismo nombre visible confundirian al panel
+  if (await getUserByUsername(nombre)) {
+    return { success: false, error: 'Ese nombre de usuario ya está en uso' }
   }
 
-  await updatePassword(user.id, newPassword)
-  await clearPasswordResetToken(user.id)
-  return { success: true, message: 'Contraseña actualizada. Ya puedes iniciar sesión.' }
+  const user = await createUserProfile(uid, {
+    username: nombre,
+    email: email || registro.email
+  })
+  return { success: true, user, creado: true }
 }
 
-export { getUserById, generateToken }
+async function createUserProfile(uid, { username, email }) {
+  const { getDb } = await import('../database/firestore.js')
+  const perfil = {
+    username,
+    email,
+    isAdmin: false,
+    phone: '',
+    address: '',
+    createdAt: new Date()
+  }
+  await getDb().collection('users').doc(uid).set(perfil)
+  return { id: uid, ...perfil }
+}
+
+/** Alta completa desde el servidor: solo la usa el seed. */
+export async function registerUser(username, email, password, isAdmin = false) {
+  if (await getUserByUsername(username)) {
+    return { success: false, error: 'El usuario ya existe' }
+  }
+  const user = await createUser({ username, email, password, isAdmin })
+  return { success: true, user }
+}
+
+export { getUserById, updateProfile, getAllUsers, setAdmin }

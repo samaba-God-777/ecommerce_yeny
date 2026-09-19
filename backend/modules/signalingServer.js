@@ -1,4 +1,5 @@
 import { Server } from 'socket.io'
+import { allowedOrigins } from '../src/config/origins.js'
 
 // Almacenar conexiones activas
 const callRooms = new Map()
@@ -8,7 +9,10 @@ let io = null
 function initializeSignalingServer(server) {
   io = new Server(server, {
     cors: {
-      origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5177', 'http://localhost:5178', 'http://localhost:5179', 'http://localhost:5000'],
+      // Misma lista que el API: el socket va directo a Cloud Run, asi que sin
+      // los dominios de Hosting aqui el navegador bloquea el chat y las
+      // videollamadas en produccion.
+      origin: allowedOrigins,
       methods: ['GET', 'POST'],
       credentials: true
     },

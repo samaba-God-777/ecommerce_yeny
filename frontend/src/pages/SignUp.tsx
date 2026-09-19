@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import api from '../lib/api'
+import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { auth, mensajeDeError } from '../lib/firebase'
+import { useAuth } from '../context/AuthContext'
 import { FcGoogle } from 'react-icons/fc'
 import { ShoppingBag, Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
 
@@ -14,6 +16,7 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { sincronizar } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,14 +35,14 @@ export default function SignUp() {
     setIsLoading(true)
 
     try {
-      const { data } = await api.post('/auth/register', { username, email, password })
-      if (data.success) {
-        localStorage.setItem('customerToken', data.token)
-        toast.success('¡Cuenta creada exitosamente!')
-        navigate('/dashboard')
-      }
+      // La cuenta se crea en Firebase Auth; el perfil (nombre de usuario,
+      // telefono, direccion) lo guarda el API en el siguiente paso.
+      await createUserWithEmailAndPassword(auth, email, password)
+      await sincronizar(username)
+      toast.success('¡Cuenta creada exitosamente!')
+      navigate('/dashboard')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al crear la cuenta')
+      setError(err.code ? mensajeDeError(err.code) : 'Error al crear la cuenta')
     } finally {
       setIsLoading(false)
     }

@@ -1,29 +1,25 @@
-import { getDb } from '../database/connection.js'
+import { getDb, FieldValue } from '../database/firestore.js'
 import { v4 as uuidv4 } from 'uuid'
 
-function formatCoupon(doc) {
-  if (!doc) return null
-  const { _id, ...rest } = doc
-  return { id: _id.toString(), ...rest }
-}
+const coleccion = () => getDb().collection('coupons')
+
+const formatCoupon = (doc) => (doc?.exists ? { id: doc.id, ...doc.data() } : null)
 
 export async function getAllCoupons() {
-  const db = getDb()
-  const coupons = await db.collection('coupons').find().sort({ createdAt: -1 }).toArray()
-  return coupons.map(formatCoupon)
+  const snap = await coleccion().get()
+  return snap.docs
+    .map(formatCoupon)
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
 }
 
 export async function getCouponByCode(code) {
-  const db = getDb()
-  const coupon = await db.collection('coupons').findOne({ code: code.toUpperCase() })
-  return formatCoupon(coupon)
+  const snap = await coleccion().where('code', '==', String(code).toUpperCase()).limit(1).get()
+  return snap.empty ? null : formatCoupon(snap.docs[0])
 }
 
 export async function createCoupon(data) {
-  const db = getDb()
-  const id = data.id || uuidv4()
+  const id = String(data.id || uuidv4())
   const coupon = {
-    _id: id,
     code: data.code.toUpperCase(),
     discount: data.discount,
     type: data.type,
@@ -34,42 +30,42 @@ export async function createCoupon(data) {
     active: true,
     createdAt: new Date()
   }
-  await db.collection('coupons').insertOne(coupon)
-  return formatCoupon(coupon)
+  await coleccion().doc(id).set(coupon)
+  return { id, ...coupon }
 }
 
 export async function updateCoupon(id, data) {
-  const db = getDb()
-  const updates = {
-    code: data.code?.toUpperCase(),
-    discount: data.discount,
-    type: data.type,
-    maxUses: data.maxUses,
-    minAmount: data.minAmount,
-    expires: data.expires
+  // Firestore rechaza los undefined, asi que solo se mandan los campos que
+  // realmente vienen en la peticion.
+  const updates = {}
+  if (data.code !== undefined) updates.code = String(data.code).toUpperCase()
+  for (const campo of ['discount', 'type', 'maxUses', 'minAmount', 'expires']) {
+    if (data[campo] !== undefined) updates[campo] = data[campo]
   }
-  await db.collection('coupons').updateOne({ _id: id }, { $set: updates })
-  const coupon = await db.collection('coupons').findOne({ _id: id })
-  return formatCoupon(coupon)
+
+  const ref = coleccion().doc(String(id))
+  if (Object.keys(updates).length) await ref.update(updates)
+  return formatCoupon(await ref.get())
 }
 
 export async function deleteCoupon(id) {
-  const db = getDb()
-  await db.collection('coupons').deleteOne({ _id: id })
+  await coleccion().doc(String(id)).delete()
 }
 
 export async function incrementCouponUses(code) {
-  const db = getDb()
-  await db.collection('coupons').updateOne({ code: code.toUpperCase() }, { $inc: { uses: 1 } })
+  const cupon = await getCouponByCode(code)
+  if (!cupon) return
+  await coleccion().doc(cupon.id).update({
+    uses: FieldValue.increment(1)
+  })
 }
 
 export async function toggleCoupon(id) {
-  const db = getDb()
-  const coupon = await db.collection('coupons').findOne({ _id: id })
-  if (!coupon) return null
-  await db.collection('coupons').updateOne({ _id: id }, { $set: { active: !coupon.active } })
-  const updated = await db.collection('coupons').findOne({ _id: id })
-  return formatCoupon(updated)
+  const ref = coleccion().doc(String(id))
+  const doc = await ref.get()
+  if (!doc.exists) return null
+  await ref.update({ active: !doc.data().active })
+  return formatCoupon(await ref.get())
 }
 
 export async function validateCoupon(code, subtotal) {

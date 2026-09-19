@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, ArrowLeft, ShoppingBag, Send, CheckCircle2 } from 'lucide-react'
-import api from '../lib/api'
+import { sendPasswordResetEmail } from 'firebase/auth'
+import { auth, mensajeDeError } from '../lib/firebase'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -15,15 +16,16 @@ export default function ForgotPassword() {
     setIsLoading(true)
 
     try {
-      await api.post('/auth/forgot-password', { email })
+      await sendPasswordResetEmail(auth, email)
       setSent(true)
     } catch (err: any) {
-      // Sin respuesta del servidor es un problema de conexion, no del correo.
-      setError(
-        err.response?.data?.error ||
-        (err.response ? 'No pudimos enviar el correo. Intenta de nuevo.'
-                      : 'No pudimos conectar con el servidor. Revisa tu conexión e intenta de nuevo.')
-      )
+      // Firebase responde igual exista o no la cuenta, salvo errores de forma
+      // (correo mal escrito) o de conexion.
+      if (err.code === 'auth/user-not-found') {
+        setSent(true)
+        return
+      }
+      setError(err.code ? mensajeDeError(err.code) : 'No pudimos enviar el correo. Intenta de nuevo.')
     } finally {
       setIsLoading(false)
     }
@@ -52,7 +54,7 @@ export default function ForgotPassword() {
                 enlace para elegir una contraseña nueva.
               </p>
               <p className="text-slate-500 text-xs mt-3">
-                El enlace vence en 30 minutos. Si no lo ves, mira en la carpeta de spam.
+                El enlace vence en una hora. Si no lo ves, mira en la carpeta de spam.
               </p>
               <button
                 onClick={() => { setSent(false); setEmail('') }}

@@ -1,5 +1,17 @@
 {
-  "dependencies": {
-    "mongodb": "^7.6.0"
+  "name": "yenyleths",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix frontend run build && npm --prefix administrador run build",
+    "deploy": "npm run build && npm run deploy:hosting",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "deploy:tienda": "npm --prefix frontend run build && firebase deploy --only hosting:tienda",
+    "deploy:panel": "npm --prefix administrador run build && firebase deploy --only hosting:panel",
+    "deploy:reglas": "firebase deploy --only firestore:rules",
+    "deploy:api": "gcloud run deploy yenyleths-api --source backend --region us-central1 --allow-unauthenticated --max-instances 1",
+    "emuladores": "firebase emulators:start --only firestore,auth"
+  },
+  "devDependencies": {
+    "firebase-tools": "^14.24.0"
   }
 }

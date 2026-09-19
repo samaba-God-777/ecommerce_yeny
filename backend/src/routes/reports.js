@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getDb } from '../database/connection.js'
+import { getDb } from '../database/firestore.js'
 import asyncHandler from '../middleware/asyncHandler.js'
 
 const router = Router()
@@ -8,9 +8,18 @@ router.get('/summary', asyncHandler(async (req, res) => {
   const db = getDb()
   const { period } = req.query
 
-  const orders = await db.collection('orders').find().toArray()
-  const products = await db.collection('products').find().toArray()
-  const categories = await db.collection('categories').find().toArray()
+  // Tope de lectura: los reportes recorren las colecciones enteras y en
+  // Firestore cada documento leido se cobra.
+  const TOPE = 5000
+  const [ordersSnap, productsSnap, categoriesSnap] = await Promise.all([
+    db.collection('orders').limit(TOPE).get(),
+    db.collection('products').limit(TOPE).get(),
+    db.collection('categories').limit(TOPE).get()
+  ])
+  const aObjetos = (snap) => snap.docs.map(d => ({ id: d.id, ...d.data() }))
+  const orders = aObjetos(ordersSnap)
+  const products = aObjetos(productsSnap)
+  const categories = aObjetos(categoriesSnap)
 
   const paidOrders = orders.filter(o => o.paymentStatus === 'paid')
   const totalRevenue = paidOrders.reduce((sum, o) => sum + (o.total || 0), 0)
@@ -27,7 +36,7 @@ router.get('/summary', asyncHandler(async (req, res) => {
   const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
   const salesByMonth = months.map((month, i) => {
     const monthOrders = paidOrders.filter(o => {
-      const d = new Date(o.createdAt)
+      const d = o.createdAt?.toDate ? o.createdAt.toDate() : new Date(o.createdAt)
       return d.getMonth() === i
     })
     return {
@@ -42,7 +51,7 @@ router.get('/summary', asyncHandler(async (req, res) => {
     catValueMap[cat.name] = 0
   }
   for (const p of products) {
-    const cat = categories.find(c => c._id === p.categoryId)
+    const cat = categories.find(c => c.id === p.categoryId)
     if (cat) catValueMap[cat.name] += (p.price || 0) * (p.stock || 0)
   }
 
@@ -59,7 +68,7 @@ router.get('/summary', asyncHandler(async (req, res) => {
 
   const categoryCounts = categories.map(cat => ({
     name: cat.name,
-    count: products.filter(p => p.categoryId === cat._id).length
+    count: products.filter(p => p.categoryId === cat.id).length
   })).filter(c => c.count > 0)
 
   const flags = {

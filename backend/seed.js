@@ -1,18 +1,58 @@
-import { MongoClient } from 'mongodb'
-import bcrypt from 'bcryptjs'
-import { preguntar } from './scripts/lib/preguntar.js'
 import fs from 'fs'
+import { connectToFirestore, getDb, getAuth, closeDb } from './src/database/firestore.js'
+import { preguntar } from './scripts/lib/preguntar.js'
 
-const MONGODB_URI = process.env.MONGODB_URI
-const DB_NAME = 'yenyleths'
+/**
+ * Carga los datos iniciales en Firestore y crea el administrador.
+ *
+ * El admin se crea en Firebase Auth (correo + contrasena) y su perfil queda en
+ * Firestore; el permiso viaja como custom claim, que es lo que lee el backend.
+ *
+ * Uso:
+ *   node seed.js                     → pide la contrasena por teclado
+ *   ADMIN_PASSWORD="..." node seed.js
+ *
+ * Opcionales: ADMIN_USERNAME, ADMIN_EMAIL, DEMO_USER_PASSWORD.
+ */
+
+const COLECCIONES = ['categories', 'products', 'users', 'conversations', 'messages', 'orders', 'coupons', 'reviews', 'notifications']
+
+async function borrarColeccion(db, nombre) {
+  // Firestore no sabe "borrar coleccion": hay que ir por lotes de 500.
+  let borrados = 0
+  for (;;) {
+    const snap = await db.collection(nombre).limit(500).get()
+    if (snap.empty) return borrados
+    const lote = db.batch()
+    snap.docs.forEach(doc => lote.delete(doc.ref))
+    await lote.commit()
+    borrados += snap.size
+  }
+}
+
+async function crearCuenta({ uid, email, password, username, isAdmin }) {
+  const auth = getAuth()
+
+  // Si la cuenta ya existe en Auth (de un seed anterior) se reutiliza y se le
+  // pone la contrasena nueva: Auth no admite dos cuentas con el mismo correo.
+  let registro
+  try {
+    registro = await auth.getUserByEmail(email)
+    await auth.updateUser(registro.uid, { password, displayName: username })
+  } catch {
+    registro = await auth.createUser({ uid, email, password, displayName: username })
+  }
+
+  await auth.setCustomUserClaims(registro.uid, { isAdmin: !!isAdmin })
+  return registro.uid
+}
 
 async function seed() {
   // Las credenciales se resuelven antes de tocar la base: si aqui se cancela
   // o no coinciden, nada se ha borrado todavia.
   const adminUser = process.env.ADMIN_USERNAME || 'admin'
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@yenyleths.com'
-  // Sin ADMIN_PASSWORD se pregunta por teclado, oculta, para no dejarla en el
-  // historial del shell.
+
   let adminPassword = process.env.ADMIN_PASSWORD
   if (!adminPassword && process.stdin.isTTY) {
     adminPassword = await preguntar(`Contrasena para el admin "${adminUser}" (no se muestra): `, true)
@@ -28,38 +68,31 @@ async function seed() {
     process.exit(1)
   }
 
-  const client = new MongoClient(MONGODB_URI)
-  await client.connect()
-  const db = client.db(DB_NAME)
+  await connectToFirestore()
+  const db = getDb()
+  console.log('Conectado a Firestore...')
 
-  console.log('Conectado a MongoDB Atlas...')
-
-  // Limpiar colecciones
-  const collections = ['categories', 'products', 'users', 'conversations', 'messages', 'orders', 'coupons', 'reviews', 'notifications']
-  for (const col of collections) {
-    await db.collection(col).deleteMany({})
-    console.log(`✓ Colección ${col} limpiada`)
+  for (const col of COLECCIONES) {
+    const borrados = await borrarColeccion(db, col)
+    console.log(`✓ Colección ${col} limpiada (${borrados})`)
   }
 
-  // Leer datos de db.json
   const seedData = JSON.parse(fs.readFileSync('db.json', 'utf-8'))
 
-  // Insertar categorías
+  // Un solo lote: mucho mas rapido y barato que documento a documento
+  const lote = db.batch()
+
   for (const cat of seedData.categories) {
-    await db.collection('categories').insertOne({
-      _id: cat.id,
+    lote.set(db.collection('categories').doc(String(cat.id)), {
       name: cat.name,
       slug: cat.slug,
       image: cat.image || null,
       createdAt: new Date()
     })
   }
-  console.log(`✓ ${seedData.categories.length} categorías insertadas`)
 
-  // Insertar productos
   for (const p of seedData.products) {
-    await db.collection('products').insertOne({
-      _id: p.id,
+    lote.set(db.collection('products').doc(String(p.id)), {
       name: p.name,
       categoryId: p.categoryId,
       brand: p.brand || '',
@@ -77,49 +110,9 @@ async function seed() {
       createdAt: new Date()
     })
   }
-  console.log(`✓ ${seedData.products.length} productos insertados`)
 
-  // Insertar usuario admin
-  //
-  // La clave sale del entorno: si se deja escrita aqui, cualquiera que lea el
-  // repo puede entrar al panel. Sin ADMIN_PASSWORD el seed no continua.
-  const adminHash = bcrypt.hashSync(adminPassword, 10)
-  await db.collection('users').insertOne({
-    _id: 'admin-1',
-    username: adminUser,
-    email: adminEmail,
-    passwordHash: adminHash,
-    isAdmin: true,
-    phone: '',
-    address: '',
-    createdAt: new Date()
-  })
-
-  // Insertar usuario de prueba (opcional)
-  //
-  // Solo se crea si se pide con DEMO_USER_PASSWORD. Antes venia con una clave
-  // fija en el codigo, que en un repo publico equivale a dejar la cuenta abierta.
-  const demoPassword = process.env.DEMO_USER_PASSWORD
-  if (demoPassword) {
-    await db.collection('users').insertOne({
-      _id: 'user-1',
-      username: process.env.DEMO_USER_NAME || 'demo',
-      email: process.env.DEMO_USER_EMAIL || 'demo@yenyleths.com',
-      passwordHash: bcrypt.hashSync(demoPassword, 10),
-      isAdmin: false,
-      phone: '',
-      address: '',
-      createdAt: new Date()
-    })
-    console.log('✓ 2 usuarios insertados (admin + demo)')
-  } else {
-    console.log('✓ 1 usuario insertado (admin). Para uno de prueba: DEMO_USER_PASSWORD=...')
-  }
-
-  // Insertar conversaciones
   for (const c of seedData.conversations) {
-    await db.collection('conversations').insertOne({
-      _id: c.id,
+    lote.set(db.collection('conversations').doc(String(c.id)), {
       customerName: c.customerName,
       customerEmail: c.customerEmail || '',
       customerId: c.customerId || '',
@@ -129,12 +122,9 @@ async function seed() {
       avatar: c.avatar || ''
     })
   }
-  console.log(`✓ ${seedData.conversations.length} conversaciones insertadas`)
 
-  // Insertar mensajes
   for (const m of seedData.messages) {
-    await db.collection('messages').insertOne({
-      _id: m.id,
+    lote.set(db.collection('messages').doc(String(m.id)), {
       conversationId: m.conversationId,
       sender: m.sender || 'customer',
       senderName: m.senderName || 'Cliente',
@@ -142,25 +132,80 @@ async function seed() {
       timestamp: new Date(m.timestamp)
     })
   }
-  console.log(`✓ ${seedData.messages.length} mensajes insertados`)
 
-  // Insertar cupones
-  const nextYear = new Date()
-  nextYear.setFullYear(nextYear.getFullYear() + 1)
+  const proximoAnio = new Date()
+  proximoAnio.setFullYear(proximoAnio.getFullYear() + 1)
+  const cupones = [
+    { id: 'coup-1', code: 'BIENVENIDO10', discount: 10, type: 'percent', maxUses: 100 },
+    { id: 'coup-2', code: 'YENYLETHS20', discount: 20, type: 'percent', maxUses: 50 },
+    { id: 'coup-3', code: 'ENVIOGRATIS', discount: 100, type: 'free_shipping', maxUses: 200 }
+  ]
+  for (const c of cupones) {
+    lote.set(db.collection('coupons').doc(c.id), {
+      code: c.code,
+      discount: c.discount,
+      type: c.type,
+      uses: 0,
+      maxUses: c.maxUses,
+      minAmount: 0,
+      expires: proximoAnio,
+      active: true,
+      createdAt: new Date()
+    })
+  }
 
-  await db.collection('coupons').insertMany([
-    { _id: 'coup-1', code: 'BIENVENIDO10', discount: 10, type: 'percent', uses: 0, maxUses: 100, minAmount: 0, expires: nextYear, active: true, createdAt: new Date() },
-    { _id: 'coup-2', code: 'YENYLETHS20', discount: 20, type: 'percent', uses: 0, maxUses: 50, minAmount: 0, expires: nextYear, active: true, createdAt: new Date() },
-    { _id: 'coup-3', code: 'ENVIOGRATIS', discount: 100, type: 'free_shipping', uses: 0, maxUses: 200, minAmount: 0, expires: nextYear, active: true, createdAt: new Date() }
-  ])
-  console.log('✓ 3 cupones insertados')
+  await lote.commit()
+  console.log(`✓ ${seedData.categories.length} categorías, ${seedData.products.length} productos, ${cupones.length} cupones`)
+  console.log(`✓ ${seedData.conversations.length} conversaciones, ${seedData.messages.length} mensajes`)
 
-  console.log('\n🎉 Seed completado exitosamente!')
-  console.log('\nCredenciales admin:')
-  console.log(`  Usuario: ${adminUser}`)
-  console.log('  Contraseña: la que pasaste en ADMIN_PASSWORD')
+  // Administrador: cuenta en Auth + perfil en Firestore
+  const adminUid = await crearCuenta({
+    uid: 'admin-1',
+    email: adminEmail,
+    password: adminPassword,
+    username: adminUser,
+    isAdmin: true
+  })
+  await db.collection('users').doc(adminUid).set({
+    username: adminUser,
+    email: adminEmail,
+    isAdmin: true,
+    phone: '',
+    address: '',
+    createdAt: new Date()
+  })
+  console.log('✓ Administrador creado')
 
-  await client.close()
+  const demoPassword = process.env.DEMO_USER_PASSWORD
+  if (demoPassword) {
+    const demoNombre = process.env.DEMO_USER_NAME || 'demo'
+    const demoEmail = process.env.DEMO_USER_EMAIL || 'demo@yenyleths.com'
+    const demoUid = await crearCuenta({
+      uid: 'user-1',
+      email: demoEmail,
+      password: demoPassword,
+      username: demoNombre,
+      isAdmin: false
+    })
+    await db.collection('users').doc(demoUid).set({
+      username: demoNombre,
+      email: demoEmail,
+      isAdmin: false,
+      phone: '',
+      address: '',
+      createdAt: new Date()
+    })
+    console.log('✓ Usuario de prueba creado')
+  } else {
+    console.log('✓ Sin usuario de prueba. Para crearlo: DEMO_USER_PASSWORD=...')
+  }
+
+  console.log('\n🎉 Seed completado')
+  console.log('\nEntra al panel con:')
+  console.log(`  Correo: ${adminEmail}`)
+  console.log('  Contraseña: la que acabas de escribir')
+
+  await closeDb()
   process.exit(0)
 }
 

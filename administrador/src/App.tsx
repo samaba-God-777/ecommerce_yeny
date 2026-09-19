@@ -22,7 +22,9 @@ import PaymentsConfig from './components/PaymentsConfig'
 import ReportsPage from './components/ReportsPage'
 import Dashboard from './features/dashboard/components/DashboardHome'
 import api from './lib/api'
-import { STORE_URL, API_ORIGIN } from './lib/urls'
+import { auth, mensajeDeError } from './lib/firebase'
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'
+import { STORE_URL, SOCKET_URL } from './lib/urls'
 
 interface Category { id: string; name: string; slug: string; image: string | null }
 interface Product {
@@ -32,7 +34,68 @@ interface Product {
   isBestSeller?: boolean; isTrending?: boolean
 }
 
-const SOCKET_URL = API_ORIGIN
+
+
+function LoginForm({ onLogin }: { onLogin: (email: string, password: string) => Promise<void> }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [entrando, setEntrando] = useState(false)
+
+  const enviar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setEntrando(true)
+    try {
+      await onLogin(email, password)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo iniciar sesión')
+    } finally {
+      setEntrando(false)
+    }
+  }
+
+  const campo = 'w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring'
+
+  return (
+    <form onSubmit={enviar} className="bg-card border border-line rounded-xl shadow-lg p-6 text-left space-y-4">
+      <input
+        type="email"
+        placeholder="Correo electrónico"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+        autoComplete="email"
+        autoFocus
+        className={campo}
+      />
+      <input
+        type="password"
+        placeholder="Contraseña"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        autoComplete="current-password"
+        className={campo}
+      />
+
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center">
+          {error}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={entrando}
+        className="w-full px-6 py-3 bg-ink text-primary-foreground rounded-lg font-semibold hover:bg-market transition disabled:opacity-60"
+      >
+        {entrando ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+      </button>
+      <a href={`${STORE_URL}/`} className="block text-center text-sm text-market hover:text-market-deep font-medium">Ir a la Tienda</a>
+    </form>
+  )
+}
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -81,22 +144,27 @@ export default function App() {
       }
     }
 
-    const checkAuth = async () => {
-      const t = localStorage.getItem('adminToken')
-      if (!t) return
-
+    // Firebase recuerda la sesion y renueva el token solo; aqui solo se
+    // comprueba que la cuenta siga siendo administradora.
+    const cancelar = onAuthStateChanged(auth, async (cuenta) => {
+      if (!cuenta) {
+        setIsAuthenticated(false)
+        setUsername('')
+        return
+      }
       try {
         const { data } = await api.get('/auth/me')
-        if (data.success) {
+        if (data.success && data.user.isAdmin) {
           setIsAuthenticated(true)
           setUsername(data.user.username)
+        } else {
+          await signOut(auth)
         }
       } catch {
-        localStorage.removeItem('adminToken')
         setIsAuthenticated(false)
       }
-    }
-    checkAuth()
+    })
+    return cancelar
   }, [])
 
   useEffect(() => {
@@ -113,25 +181,27 @@ export default function App() {
     catch (err) { console.error('Error:', err) }
   }
 
-  const handleLogin = async (username: string, password: string) => {
+  const handleLogin = async (email: string, password: string) => {
     try {
-      const { data } = await api.post('/auth/login', { username, password })
-      if (data.success) {
-        localStorage.setItem('adminToken', data.token)
-        document.cookie = `adminToken=${data.token}; path=/; max-age=604800`
-        setIsAuthenticated(true)
-        setUsername(data.user.username)
-        fetchCategories(); fetchProducts()
+      await signInWithEmailAndPassword(auth, email, password)
+
+      // Entrar no basta: el panel es solo para administradores
+      const { data } = await api.get('/auth/me')
+      if (!data.success || !data.user.isAdmin) {
+        await signOut(auth)
+        throw new Error('Esta cuenta no tiene permisos de administrador')
       }
+
+      setIsAuthenticated(true)
+      setUsername(data.user.username)
+      fetchCategories(); fetchProducts()
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'Error al iniciar sesión'
-      throw new Error(msg)
+      throw new Error(err.code ? mensajeDeError(err.code) : err.message || 'Error al iniciar sesión')
     }
   }
 
   const handleLogout = async () => {
-    localStorage.removeItem('adminToken')
-    document.cookie = 'adminToken=; path=/; max-age=0'
+    await signOut(auth)
     setIsAuthenticated(false)
     setUsername('')
     setTab('dashboard')
@@ -204,16 +274,7 @@ export default function App() {
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-ink mb-1">Yenyleths</h1>
           <p className="text-market font-mono text-xs tracking-[0.2em] uppercase mb-8">Panel de Administración</p>
-          <div className="bg-card border border-line rounded-xl shadow-lg p-6 text-left space-y-4">
-            <input id="login-user" placeholder="Usuario" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" autoComplete="username" />
-            <input id="login-pass" type="password" placeholder="Contraseña" className="w-full px-4 py-2.5 border border-line bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" autoComplete="current-password" />
-            <button onClick={async () => {
-              const u = (document.getElementById('login-user') as HTMLInputElement).value
-              const p = (document.getElementById('login-pass') as HTMLInputElement).value
-              try { await handleLogin(u, p) } catch (e) { alert(e instanceof Error ? e.message : 'No se pudo iniciar sesión') }
-            }} className="w-full px-6 py-3 bg-ink text-primary-foreground rounded-lg font-semibold hover:bg-market transition">Iniciar Sesión</button>
-            <a href={`${STORE_URL}/`} className="block text-center text-sm text-market hover:text-market-deep font-medium">Ir a la Tienda</a>
-          </div>
+          <LoginForm onLogin={handleLogin} />
         </div>
       </div>
     )
