@@ -72,7 +72,7 @@ const giftCards: GiftCard[] = [
     balance: '$20.00',
     originalAmount: '$50.00',
     expiry: 'Mar 2027',
-    color: 'from-rose-400 via-pink-500 to-fuchsia-600',
+    color: 'from-pink-300 via-pink-500 to-fuchsia-600',
   },
 ]
 
@@ -350,7 +350,7 @@ export default function DashboardWallet() {
                               </td>
                               <td className="px-4 py-3">
                                 <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                                  tx.type === 'credit' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                                  tx.type === 'credit' ? 'bg-emerald-50 text-emerald-700' : 'bg-pink-50 text-pink-700'
                                 }`}>
                                   {tx.type === 'credit' ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
                                   {tx.type === 'credit' ? 'Crédito' : 'Débito'}
@@ -449,7 +449,7 @@ export default function DashboardWallet() {
                       <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
                         entry.status === 'credited'
                           ? 'bg-emerald-50 text-emerald-700'
-                          : 'bg-amber-50 text-amber-700'
+                          : 'bg-pink-50 text-pink-700'
                       }`}>
                         {entry.status === 'credited' ? <CheckCircle2 size={10} /> : <Clock size={10} />}
                         {entry.status === 'credited' ? 'Acreditado' : 'Pendiente'}

@@ -31,8 +31,8 @@ const stagger = {
 
 const stats = [
   { label: 'Friends Joined', value: '12', icon: Users, color: 'from-pink-400 to-pink-500' },
-  { label: 'Total Earnings', value: '$60', icon: DollarSign, color: 'from-amber-400 to-amber-500' },
-  { label: 'Pending', value: '$50', icon: Clock, color: 'from-orange-400 to-orange-500' },
+  { label: 'Total Earnings', value: '$60', icon: DollarSign, color: 'from-pink-300 to-pink-400' },
+  { label: 'Pending', value: '$50', icon: Clock, color: 'from-pink-400 to-pink-500' },
   { label: 'Available', value: '$10', icon: Wallet, color: 'from-emerald-400 to-emerald-500' },
 ]
 
@@ -275,7 +275,7 @@ export default function ReferralProgram() {
                         className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           row.status === 'Paid'
                             ? 'bg-emerald-50 text-emerald-600'
-                            : 'bg-amber-50 text-amber-600'
+                            : 'bg-pink-50 text-pink-600'
                         }`}
                       >
                         {row.status}

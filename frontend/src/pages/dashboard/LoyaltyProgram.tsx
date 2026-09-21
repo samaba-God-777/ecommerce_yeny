@@ -63,7 +63,7 @@ const rewards: Reward[] = [
   { id: '1', title: '$5 Off', description: 'Get $5 off your next order', pointsCost: 500, icon: Tag, color: 'from-gold-light to-gold' },
   { id: '2', title: '$10 Off', description: 'Get $10 off your next order', pointsCost: 900, icon: Tag, color: 'from-gold to-gold-dark' },
   { id: '3', title: 'Free Shipping', description: 'Free standard shipping on any order', pointsCost: 300, icon: Truck, color: 'from-pink-300 to-pink-400' },
-  { id: '4', title: '20% Off', description: '20% off your entire cart', pointsCost: 1500, icon: Percent, color: 'from-gold-dark to-rose-500' },
+  { id: '4', title: '20% Off', description: '20% off your entire cart', pointsCost: 1500, icon: Percent, color: 'from-gold-dark to-pink-500' },
 ]
 
 const achievements: Achievement[] = [

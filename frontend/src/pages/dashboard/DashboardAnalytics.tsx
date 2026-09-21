@@ -32,9 +32,9 @@ const maxSpending = Math.max(...monthlySpending.map((m) => m.amount))
 
 const categories = [
   { name: 'Dresses', percent: 35, color: 'from-pink-400 to-pink-500' },
-  { name: 'Accessories', percent: 25, color: 'from-amber-400 to-amber-500' },
+  { name: 'Accessories', percent: 25, color: 'from-pink-300 to-pink-400' },
   { name: 'Bags', percent: 20, color: 'from-purple-400 to-purple-500' },
-  { name: 'Jewelry', percent: 12, color: 'from-rose-400 to-rose-500' },
+  { name: 'Jewelry', percent: 12, color: 'from-pink-300 to-pink-500' },
   { name: 'Shoes', percent: 8, color: 'from-cyan-400 to-cyan-500' },
 ]
 
@@ -85,7 +85,7 @@ export default function DashboardAnalytics() {
             <p className="mt-0.5 text-xs text-brown/50">Total Spent</p>
           </div>
           <div className="rounded-2xl border border-pink-100 bg-white p-5 shadow-sm">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 text-white">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-pink-300 to-pink-400 text-white">
               <ShoppingBag size={20} />
             </div>
             <p className="text-2xl font-bold text-brown">$46.55</p>
@@ -99,7 +99,7 @@ export default function DashboardAnalytics() {
             <p className="mt-1 text-xs text-brown/50">Top Category</p>
           </div>
           <div className="rounded-2xl border border-pink-100 bg-white p-5 shadow-sm">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-400 to-rose-500 text-white">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-pink-300 to-pink-500 text-white">
               <Heart size={20} />
             </div>
             <p className="text-2xl font-bold text-brown">Gucci</p>

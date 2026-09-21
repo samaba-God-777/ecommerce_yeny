@@ -1,64 +1,63 @@
 @import 'tailwindcss';
 
 @theme {
-  /* ===== Industrial Streetwear: the sales-floor stockroom. =====
-     White cotton + black nylon ground, black-on-white hazard
-     diagonals for structure, ONE safety-orange zip-tie tag accent.
-     Every zone named in straight-quoted industrial capitals; prices
-     read as paper price tickets. Refuses the cream-shelf boutique
-     and the dark-neon shop, both. */
-  --color-paper: #f2f0ea;
-  --color-paper-elevated: #fbfaf6;
-  --color-ink: #14120f;
-  --color-ink-soft: #5a554c;
-  --color-line: #d9d4c6;
-  --color-line-strong: #a8a294;
-  --color-market: #f04e1a;
-  --color-market-deep: #c63d10;
-  --color-market-bright: #ff6a33;
+  /* ===== Rosa pastel =====
+     Mismo esqueleto industrial (diagonales, tickets de precio, mayusculas
+     entrecomilladas), pero en rosa: fondo rosa muy claro, tinta ciruela y un
+     rosa viejo como acento. Los tonos se eligieron midiendo contraste: el
+     acento da 4.9 como texto sobre el fondo y 5.26 con blanco encima, asi
+     vale para textos y para botones. Los rosas claros, solo para rellenos. */
+  --color-paper: #fdf5f8;
+  --color-paper-elevated: #fffafc;
+  --color-ink: #2a1d23;
+  --color-ink-soft: #5c4750;
+  --color-line: #efd6e0;
+  --color-line-strong: #dba9bf;
+  --color-market: #ad4a71;
+  --color-market-deep: #96365d;
+  --color-market-bright: #c25b84;
   --color-chalk: #ffffff;
 
-  /* Legacy brand aliases remapped to the stockroom world.
-     Kept under the old names so the whole storefront inherits them. */
-  --color-gold: #f04e1a;
-  --color-gold-light: #ff6a33;
-  --color-gold-dark: #c63d10;
-  --color-brown: #14120f;
-  --color-beige: #e9e5da;
-  --color-cream: #fbfaf6;
+  /* Alias antiguos, para que toda la tienda herede la paleta. */
+  --color-gold: #ad4a71;
+  --color-gold-light: #c25b84;
+  --color-gold-dark: #96365d;
+  --color-brown: #2a1d23;
+  --color-beige: #f7e6ed;
+  --color-cream: #fffafc;
 
-  --color-pink-50: #fbeae2;
-  --color-pink-100: #f9d6c4;
-  --color-pink-200: #f3a67c;
-  --color-pink-300: #f0762f;
-  --color-pink-400: #f04e1a;
-  --color-pink-500: #f04e1a;
-  --color-pink-600: #c63d10;
-  --color-pink-700: #9c2f0b;
-  --color-pink-800: #73220a;
-  --color-pink-900: #4d1607;
+  --color-pink-50: #fdf5f8;
+  --color-pink-100: #f9e6ee;
+  --color-pink-200: #f2cddd;
+  --color-pink-300: #e8a0bf;
+  --color-pink-400: #d4759b;
+  --color-pink-500: #c25b84;
+  --color-pink-600: #ad4a71;
+  --color-pink-700: #96365d;
+  --color-pink-800: #7a2949;
+  --color-pink-900: #5c1c35;
 
   --font-sans: 'Archivo', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Archivo', sans-serif;
   --font-serif: 'Archivo', Georgia, serif;
   --font-mono: 'Archivo Mono', ui-monospace, monospace;
 
-  /* shadcn/ui tokens mapped to the stockroom world */
-  --color-background: #f6f4ef;
-  --color-foreground: #14120f;
-  --color-muted: #ece8dd;
-  --color-muted-foreground: #6b655a;
-  --color-primary: #14120f;
-  --color-primary-foreground: #f6f4ef;
-  --color-secondary: #f04e1a;
-  --color-secondary-foreground: #f6f4ef;
-  --color-accent: #f04e1a;
-  --color-accent-foreground: #f6f4ef;
-  --color-destructive: #b3261e;
-  --color-destructive-foreground: #f6f4ef;
-  --color-border: #d9d4c6;
-  --color-input: #cfc9ba;
-  --color-ring: #f04e1a;
+  /* Tokens de shadcn sobre la misma paleta */
+  --color-background: #fdf5f8;
+  --color-foreground: #2a1d23;
+  --color-muted: #f7e6ed;
+  --color-muted-foreground: #7a6069;
+  --color-primary: #2a1d23;
+  --color-primary-foreground: #fffafc;
+  --color-secondary: #ad4a71;
+  --color-secondary-foreground: #fffafc;
+  --color-accent: #ad4a71;
+  --color-accent-foreground: #fffafc;
+  --color-destructive: #b3243f;
+  --color-destructive-foreground: #fffafc;
+  --color-border: #efd6e0;
+  --color-input: #e5c4d3;
+  --color-ring: #ad4a71;
   --radius: 0.25rem;
 }
 

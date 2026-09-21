@@ -246,7 +246,7 @@ const ORDERS: Order[] = [
 ]
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; bg: string; icon: typeof CheckCircle2 }> = {
-  processing: { label: 'Procesando', color: 'text-amber-700', bg: 'bg-amber-50', icon: Clock },
+  processing: { label: 'Procesando', color: 'text-pink-700', bg: 'bg-pink-50', icon: Clock },
   shipped: { label: 'Enviado', color: 'text-blue-700', bg: 'bg-blue-50', icon: Truck },
   delivered: { label: 'Entregado', color: 'text-emerald-700', bg: 'bg-emerald-50', icon: CheckCircle2 },
   cancelled: { label: 'Cancelado', color: 'text-red-700', bg: 'bg-red-50', icon: XCircle },

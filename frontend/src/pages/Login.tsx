@@ -116,7 +116,7 @@ export default function Login() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="w-full mt-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                  className="w-full mt-1 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
                 />
                 <User className="absolute right-3 top-9 h-5 w-5 text-slate-400" />
               </div>
@@ -129,7 +129,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full mt-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                  className="w-full mt-1 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
                 />
                 <Mail className="absolute right-3 top-9 h-5 w-5 text-slate-400" />
               </div>
@@ -142,12 +142,12 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full mt-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                  className="w-full mt-1 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-9 text-slate-400 hover:text-amber-700"
+                  className="absolute right-3 top-9 text-slate-400 hover:text-pink-700"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -161,7 +161,7 @@ export default function Login() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="w-full mt-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                  className="w-full mt-1 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
                 />
                 <Lock className="absolute right-3 top-9 h-5 w-5 text-slate-400" />
               </div>
@@ -203,7 +203,7 @@ export default function Login() {
                   setError('')
                   setSuccess('')
                 }}
-                className="w-full flex items-center justify-center gap-2 text-sm text-slate-600 hover:text-amber-700 transition-colors py-2"
+                className="w-full flex items-center justify-center gap-2 text-sm text-slate-600 hover:text-pink-700 transition-colors py-2"
               >
                 <ArrowLeft size={16} />
                 Volver al inicio de sesión
@@ -222,7 +222,7 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="w-full mt-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                  className="w-full mt-1 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
                 />
                 <Mail className="absolute right-3 top-9 h-5 w-5 text-slate-400" />
               </div>
@@ -237,12 +237,12 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="w-full mt-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                  className="w-full mt-1 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-9 text-slate-400 hover:text-amber-700"
+                  className="absolute right-3 top-9 text-slate-400 hover:text-pink-700"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -251,7 +251,7 @@ export default function Login() {
               <div className="flex justify-end -mt-2">
                 <Link
                   to="/forgot-password"
-                  className="text-xs text-amber-700 hover:text-amber-800 font-medium"
+                  className="text-xs text-pink-700 hover:text-amber-800 font-medium"
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
@@ -294,7 +294,7 @@ export default function Login() {
                     setError('')
                     setSuccess('')
                   }}
-                  className="text-amber-700 hover:text-amber-800 font-medium"
+                  className="text-pink-700 hover:text-amber-800 font-medium"
                 >
                   Iniciar Sesión
                 </button>
@@ -307,7 +307,7 @@ export default function Login() {
                     setIsRegister(true)
                     setError('')
                   }}
-                  className="text-amber-700 hover:text-amber-800 font-medium"
+                  className="text-pink-700 hover:text-amber-800 font-medium"
                 >
                   Crear Cuenta
                 </button>

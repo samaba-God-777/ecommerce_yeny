@@ -315,7 +315,7 @@ export default function DashboardSecurity() {
                   key={alert.id}
                   className={`flex items-start gap-3 rounded-xl p-4 ${
                     alert.type === 'warning'
-                      ? 'border border-amber-200 bg-amber-50'
+                      ? 'border border-pink-200 bg-pink-50'
                       : alert.type === 'success'
                       ? 'border border-emerald-200 bg-emerald-50'
                       : 'border border-blue-200 bg-blue-50'

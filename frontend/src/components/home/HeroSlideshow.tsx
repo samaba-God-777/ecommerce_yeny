@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Tag } from 'lucide-react'
 
-const FALLBACK_IMAGE = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#14120f"/><stop offset="100%" stop-color="#2a2620"/></linearGradient></defs><rect width="1200" height="560" fill="url(#g)"/><text x="600" y="280" font-family="Arial, sans-serif" font-size="24" fill="#fbfaf6" text-anchor="middle">Pieza en el probador</text></svg>')
+const FALLBACK_IMAGE = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2a1d23"/><stop offset="100%" stop-color="#3d2b33"/></linearGradient></defs><rect width="1200" height="560" fill="url(#g)"/><text x="600" y="280" font-family="Arial, sans-serif" font-size="24" fill="#fffafc" text-anchor="middle">Pieza en el probador</text></svg>')
 
 const heroSlides = [
   {

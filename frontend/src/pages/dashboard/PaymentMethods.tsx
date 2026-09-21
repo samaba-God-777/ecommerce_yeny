@@ -97,7 +97,7 @@ const initialMethods: PaymentMethod[] = [
 
 const brandColors: Record<string, string> = {
   visa: 'from-blue-800 to-blue-600',
-  mastercard: 'from-red-600 to-orange-500',
+  mastercard: 'from-red-600 to-pink-500',
   amex: 'from-blue-600 to-blue-400',
   paypal: 'from-blue-900 to-blue-500',
   applepay: 'from-gray-800 to-gray-600',

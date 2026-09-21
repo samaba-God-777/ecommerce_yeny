@@ -64,8 +64,8 @@ export default function ResetPassword() {
         <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-white/20">
           {!token ? (
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-50 mb-4">
-                <AlertTriangle className="h-7 w-7 text-amber-600" />
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-pink-50 mb-4">
+                <AlertTriangle className="h-7 w-7 text-pink-600" />
               </div>
               <h2 className="text-2xl font-bold text-amber-900 font-serif">Enlace incompleto</h2>
               <p className="text-slate-600 text-sm mt-3">
@@ -73,7 +73,7 @@ export default function ResetPassword() {
               </p>
               <Link
                 to="/forgot-password"
-                className="inline-block mt-6 text-sm text-amber-700 hover:text-amber-800 font-medium"
+                className="inline-block mt-6 text-sm text-pink-700 hover:text-amber-800 font-medium"
               >
                 Pedir un enlace nuevo
               </Link>
@@ -106,12 +106,12 @@ export default function ResetPassword() {
                     required
                     autoComplete="new-password"
                     autoFocus
-                    className="w-full mt-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                    className="w-full mt-1 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-9 text-slate-400 hover:text-amber-700"
+                    className="absolute right-3 top-9 text-slate-400 hover:text-pink-700"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -126,7 +126,7 @@ export default function ResetPassword() {
                     placeholder="••••••••"
                     required
                     autoComplete="new-password"
-                    className="w-full mt-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                    className="w-full mt-1 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
                   />
                 </div>
 
@@ -160,7 +160,7 @@ export default function ResetPassword() {
           <div className="mt-6 pt-6 border-t border-slate-200">
             <Link
               to="/login"
-              className="w-full flex items-center justify-center gap-2 text-sm text-slate-600 hover:text-amber-700 transition-colors"
+              className="w-full flex items-center justify-center gap-2 text-sm text-slate-600 hover:text-pink-700 transition-colors"
             >
               <ArrowLeft size={16} />
               Volver al inicio de sesión

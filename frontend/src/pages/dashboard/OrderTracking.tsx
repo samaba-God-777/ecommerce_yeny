@@ -76,35 +76,35 @@ export default function OrderTracking() {
                 <svg viewBox="0 0 800 400" className="absolute inset-0 h-full w-full opacity-20" xmlns="http://www.w3.org/2000/svg">
                   {/* Grid lines */}
                   {Array.from({ length: 12 }).map((_, i) => (
-                    <line key={`h${i}`} x1="0" y1={i * 35} x2="800" y2={i * 35} stroke="#ec4899" strokeWidth="0.5" />
+                    <line key={`h${i}`} x1="0" y1={i * 35} x2="800" y2={i * 35} stroke="#ad4a71" strokeWidth="0.5" />
                   ))}
                   {Array.from({ length: 24 }).map((_, i) => (
-                    <line key={`v${i}`} x1={i * 35} y1="0" x2={i * 35} y2="400" stroke="#ec4899" strokeWidth="0.5" />
+                    <line key={`v${i}`} x1={i * 35} y1="0" x2={i * 35} y2="400" stroke="#ad4a71" strokeWidth="0.5" />
                   ))}
                   {/* Road lines */}
-                  <path d="M0 200 Q200 180 400 220 Q600 260 800 240" fill="none" stroke="#f472b6" strokeWidth="3" strokeLinecap="round" />
-                  <path d="M100 0 Q120 150 160 250 Q200 350 180 400" fill="none" stroke="#f472b6" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M500 0 Q480 100 520 200 Q560 300 540 400" fill="none" stroke="#f472b6" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M0 100 Q300 80 600 120 Q750 140 800 100" fill="none" stroke="#f472b6" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M0 200 Q200 180 400 220 Q600 260 800 240" fill="none" stroke="#d4759b" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M100 0 Q120 150 160 250 Q200 350 180 400" fill="none" stroke="#d4759b" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M500 0 Q480 100 520 200 Q560 300 540 400" fill="none" stroke="#d4759b" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M0 100 Q300 80 600 120 Q750 140 800 100" fill="none" stroke="#d4759b" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
                 {/* Route highlight */}
                 <svg viewBox="0 0 800 400" className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M150 300 Q250 250 350 200 Q450 150 550 170 Q650 190 700 120"
                     fill="none"
-                    stroke="#ec4899"
+                    stroke="#ad4a71"
                     strokeWidth="4"
                     strokeLinecap="round"
                     strokeDasharray="8 4"
                   />
                   {/* Origin */}
-                  <circle cx="150" cy="300" r="10" fill="#ec4899" />
+                  <circle cx="150" cy="300" r="10" fill="#ad4a71" />
                   <circle cx="150" cy="300" r="5" fill="white" />
                   {/* Current position */}
-                  <circle cx="550" cy="170" r="12" fill="#ec4899" opacity="0.3" />
-                  <circle cx="550" cy="170" r="6" fill="#ec4899" />
+                  <circle cx="550" cy="170" r="12" fill="#ad4a71" opacity="0.3" />
+                  <circle cx="550" cy="170" r="6" fill="#ad4a71" />
                   {/* Destination */}
-                  <circle cx="700" cy="120" r="10" fill="#fbcfe8" stroke="#ec4899" strokeWidth="2" />
+                  <circle cx="700" cy="120" r="10" fill="#f9e6ee" stroke="#ad4a71" strokeWidth="2" />
                 </svg>
                 {/* Labels */}
                 <div className="absolute left-[17%] top-[70%] rounded-full bg-gold px-3 py-1 text-[10px] font-bold text-white shadow-lg">

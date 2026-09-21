@@ -110,7 +110,7 @@ export function Navbar() {
   return (
     <header
       className={`sticky top-0 z-50 transition-all duration-300 border-b border-line ${
-        scrolled ? 'bg-paper-elevated/95 backdrop-blur-md shadow-[0_1px_0_#e9e5da]' : 'bg-paper-elevated/80'
+        scrolled ? 'bg-paper-elevated/95 backdrop-blur-md shadow-[0_1px_0_#f7e6ed]' : 'bg-paper-elevated/80'
       }`}
     >
       {/* stockroom floor strip */}

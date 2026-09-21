@@ -132,7 +132,7 @@ export default function ReturnsRefunds() {
   const statusConfig = (status: string) => {
     switch (status) {
       case 'pending':
-        return { label: 'Pendiente', color: 'bg-amber-50 text-amber-700 border-amber-200', icon: <Clock size={14} /> }
+        return { label: 'Pendiente', color: 'bg-pink-50 text-pink-700 border-pink-200', icon: <Clock size={14} /> }
       case 'approved':
         return { label: 'Aprobado', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: <CheckCircle2 size={14} /> }
       case 'processing':

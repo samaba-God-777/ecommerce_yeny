@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { FaInstagram } from 'react-icons/fa'
 
-const FALLBACK = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e9e5da"/><stop offset="100%" stop-color="#f3a67c"/></linearGradient></defs><rect width="500" height="500" fill="url(#g)"/></svg>')
+const FALLBACK = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f7e6ed"/><stop offset="100%" stop-color="#e8a0bf"/></linearGradient></defs><rect width="500" height="500" fill="url(#g)"/></svg>')
 
 export function InstagramGallery() {
   const images = Array.from({ length: 6 }, (_, i) => `https://picsum.photos/seed/yenyleths-${i}/500/500`)

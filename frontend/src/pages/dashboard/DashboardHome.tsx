@@ -23,7 +23,7 @@ const item = {
 const stats = [
   { label: 'Total Pedidos', value: '24', icon: Package, color: 'bg-pink-100 text-pink-600', change: '+3 este mes' },
   { label: 'Favoritos', value: '12', icon: Heart, color: 'bg-rose-100 text-rose-500', change: '+2 nuevos' },
-  { label: 'Cupones', value: '5', icon: Ticket, color: 'bg-amber-100 text-amber-600', change: '2 por vencer' },
+  { label: 'Cupones', value: '5', icon: Ticket, color: 'bg-pink-100 text-pink-600', change: '2 por vencer' },
   { label: 'Favoritos Star', value: '18', icon: Star, color: 'bg-yellow-100 text-yellow-600', change: '+5 esta semana' },
   { label: 'Pendientes', value: '3', icon: Clock, color: 'bg-orange-100 text-orange-500', change: 'En tránsito' },
   { label: 'Completados', value: '19', icon: CheckCircle, color: 'bg-emerald-100 text-emerald-600', change: '98% satisfacción' },
@@ -72,7 +72,7 @@ export default function DashboardHome() {
       {/* Welcome Section */}
       <motion.div
         variants={item}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-pink-500 via-pink-400 to-rose-400 p-6 text-white shadow-xl shadow-pink-200 sm:p-8"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-pink-500 via-pink-400 to-pink-300 p-6 text-white shadow-xl shadow-pink-200 sm:p-8"
       >
         <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
         <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/10" />
@@ -123,7 +123,7 @@ export default function DashboardHome() {
               initial={{ width: 0 }}
               animate={{ width: '82%' }}
               transition={{ duration: 1.2, ease: 'easeOut', delay: 0.4 }}
-              className="h-full rounded-full bg-gradient-to-r from-yellow-300 to-amber-400"
+              className="h-full rounded-full bg-gradient-to-r from-yellow-300 to-pink-300"
             />
           </div>
           <p className="mt-1.5 text-xs text-pink-100">550 puntos para alcanzar el nivel Platino</p>
