@@ -2,7 +2,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // En produccion el panel se publica dentro de la tienda, en /admin, para que
+  // ambos compartan dominio y por tanto la sesion de Firebase. En desarrollo
+  // sigue en la raiz de su propio servidor.
+  base: mode === 'production' ? '/admin/' : '/',
   plugins: [tailwindcss(), react()],
   server: {
     // En produccion Firebase Hosting redirige estas rutas al servicio de Cloud
@@ -16,4 +20,4 @@ export default defineConfig({
     port: 5173,
     open: true,
   },
-})
+}))
